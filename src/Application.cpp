@@ -53,6 +53,12 @@ void Application::run() {
         // Process keyboard input
         int key = cv::waitKey(1);
         handleKeyInput(key);
+
+        // Check if the user closed the window via the title-bar X button
+        if (cv::getWindowProperty(settings_.window_name, cv::WND_PROP_VISIBLE) < 1) {
+            std::cout << "[Application] Window closed. Shutting down.\n";
+            running_ = false;
+        }
     }
 }
 
