@@ -43,16 +43,23 @@ public:
     void setShowDebugOverlay(bool show) { show_debug_overlay_ = show; }
     void toggleDebugOverlay() { show_debug_overlay_ = !show_debug_overlay_; }
 
+    bool showGrid() const { return show_grid_; }
+    void setShowGrid(bool show) { show_grid_ = show; }
+    void toggleGrid() { show_grid_ = !show_grid_; }
+
     /// Render the overlay (hand skeleton + optional debug text) onto the frame.
     void renderOverlay(cv::Mat& frame);
 
 private:
+    void drawGrid(cv::Mat& frame, int step = 100, double alpha = 0.4) const;
+    
     std::unique_ptr<HandTracker> hand_tracker_;
     std::vector<HandData> latest_hands_;
     mutable std::mutex hands_mutex_;
 
     bool show_full_skeleton_ = false;
     bool show_debug_overlay_ = false;
+    bool show_grid_ = true;
 };
 
 } // namespace cv_keyboard

@@ -10,7 +10,14 @@
 namespace cv_keyboard {
 
 // Colours (BGR for OpenCV)
-static const cv::Scalar kColorFingerTip(0, 255, 0);       // Green
+// Colors mapped to: {THUMB, INDEX, MIDDLE, RING, PINKY} in BGR format
+static const cv::Scalar kFingerTipColors[] = {
+    cv::Scalar(0, 0, 255),    // Thumb: Red
+    cv::Scalar(0, 165, 255),  // Index: Orange
+    cv::Scalar(0, 255, 255),  // Middle: Yellow
+    cv::Scalar(0, 255, 0),    // Ring: Green
+    cv::Scalar(255, 0, 0)     // Pinky: Blue
+};
 static const cv::Scalar kColorLandmark(255, 255, 0);       // Cyan
 static const cv::Scalar kColorConnection(200, 200, 200);   // Light grey
 static const cv::Scalar kColorDebugText(0, 255, 255);      // Yellow
@@ -57,6 +64,10 @@ std::vector<HandData> Mediator::latestHands() const {
 // Overlay rendering
 // ---------------------------------------------------------------------------
 void Mediator::renderOverlay(cv::Mat& frame) {
+    if (show_grid_) {
+        drawGrid(frame, 100, 0.35); // 100px step, 35% opacity
+    }
+
     auto hands = latestHands();
     if (hands.empty()) {
         return;
@@ -76,7 +87,7 @@ void Mediator::renderOverlay(cv::Mat& frame) {
         if (show_full_skeleton_) {
             // --- Full skeleton mode: draw all 21 landmarks + connections ---
             for (int i = 0; i < 21; ++i) {
-                if (hand.landmarks[i].confidence < 0.5f) continue;
+                // if (hand.landmarks[i].confidence < 0.5f) continue;
 
                 int px = static_cast<int>(hand.landmarks[i].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[i].y * frame_h);
@@ -95,10 +106,10 @@ void Mediator::renderOverlay(cv::Mat& frame) {
                 int i0 = HAND_CONNECTIONS[c][0];
                 int i1 = HAND_CONNECTIONS[c][1];
 
-                if (hand.landmarks[i0].confidence < 0.5f ||
-                    hand.landmarks[i1].confidence < 0.5f) {
-                    continue;
-                }
+                // if (hand.landmarks[i0].confidence < 0.5f ||
+                //     hand.landmarks[i1].confidence < 0.5f) {
+                //     continue;
+                // }
 
                 cv::Point p0(
                     static_cast<int>(hand.landmarks[i0].x * frame_w),
@@ -111,15 +122,30 @@ void Mediator::renderOverlay(cv::Mat& frame) {
             }
         } else {
             // --- Finger tips only mode ---
-            for (int idx : FINGER_TIP_INDICES) {
-                if (hand.landmarks[idx].confidence < 0.5f) continue;
+            for (int i = 0; i < 5; ++i) {
+                int idx = FINGER_TIP_INDICES[i];
 
                 int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
 
+                // Draw using the finger-specific color from our array
                 cv::circle(frame, cv::Point(px, py), kFingerTipRadius,
-                           kColorFingerTip, -1);
+                           kFingerTipColors[i], -1);
             }
+        }
+
+        for (int i = 0; i < 5; ++i) {
+            int idx = FINGER_TIP_INDICES[i];
+
+            int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
+            int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
+
+            // Format coordinate text: e.g., "(412, 230)"
+            std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
+            
+            // Draw slightly offset above-right of the fingertip to avoid clipping the circle
+            cv::putText(frame, coord_text, cv::Point(px + 10, py - 10),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);
         }
 
         // --- Debug overlay: show (x, y) pixel coordinates for finger tips ---
@@ -151,6 +177,42 @@ void Mediator::renderOverlay(cv::Mat& frame) {
             }
         }
     }
+}
+
+void Mediator::drawGrid(cv::Mat& frame, int step, double alpha) const {
+    int width = frame.cols;
+    int height = frame.rows;
+
+    // Create a temporary copy to draw the semitransparent elements
+    cv::Mat grid_overlay = frame.clone();
+    cv::Scalar grid_color(255, 255, 255);  // White grid lines
+    cv::Scalar label_color(200, 200, 200); // Light grey labels
+
+    // Draw vertical lines and X-axis coordinate labels
+    for (int x = step; x < width; x += step) {
+        cv::line(grid_overlay, cv::Point(x, 0), cv::Point(x, height), grid_color, 1);
+        cv::putText(grid_overlay, std::to_string(x), cv::Point(x + 4, 15),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.4, label_color, 1);
+    }
+
+    // Draw horizontal lines and Y-axis coordinate labels
+    for (int y = step; y < height; y += step) {
+        cv::line(grid_overlay, cv::Point(0, y), cv::Point(width, y), grid_color, 1);
+        cv::putText(grid_overlay, std::to_string(y), cv::Point(4, y - 4),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.4, label_color, 1);
+    }
+
+    // Draw coordinate labels at each grid intersection for immediate GT reading
+    for (int x = step; x < width; x += step) {
+        for (int y = step; y < height; y += step) {
+            std::string coord_label = "(" + std::to_string(x) + "," + std::to_string(y) + ")";
+            cv::putText(grid_overlay, coord_label, cv::Point(x + 4, y + 14),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(180, 180, 180), 1);
+        }
+    }
+
+    // Blend the grid overlay back into the original frame with transparency
+    cv::addWeighted(grid_overlay, alpha, frame, 1.0 - alpha, 0, frame);
 }
 
 } // namespace cv_keyboard
