@@ -4,10 +4,12 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/videoio.hpp>
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 
 #include "Settings.h"
+#include "Mediator.h"
 
 namespace cv_keyboard {
 
@@ -45,11 +47,16 @@ private:
     /// Handle keyboard input (ESC to quit, 'c' to toggle camera, etc.)
     void handleKeyInput(int key);
 
+    /// Initialise the MediaPipe pipeline
+    bool initPipeline();
+
     Settings settings_;
     cv::VideoCapture capture_;
     cv::Mat frame_;
     mutable std::mutex frame_mutex_;
     std::atomic<bool> running_{false};
+
+    std::unique_ptr<Mediator> mediator_;
 };
 
 } // namespace cv_keyboard

@@ -16,6 +16,13 @@ Application::Application() {
         return;
     }
 
+    if (!initPipeline()) {
+        std::cerr << "[Application] Pipeline initialisation failed. "
+                  << "Running in camera-only mode (no hand tracking).\n";
+        // Continue running without hand tracking
+        mediator_ = nullptr;
+    }
+
     running_ = true;
 }
 
@@ -27,6 +34,15 @@ Application::~Application() {
     cv::destroyWindow(settings_.window_name);
 }
 
+bool Application::initPipeline() {
+    mediator_ = std::make_unique<Mediator>();
+    if (!mediator_->init()) {
+        mediator_.reset();
+        return false;
+    }
+    return true;
+}
+
 void Application::run() {
     if (!running_) {
         return;
@@ -36,7 +52,6 @@ void Application::run() {
         cv::Mat raw_frame;
         if (!capture_.read(raw_frame)) {
             std::cerr << "[Application] Failed to grab frame. Retrying...\n";
-            // Small delay to avoid busy-looping on camera failure
             cv::waitKey(30);
             continue;
         }
@@ -47,8 +62,19 @@ void Application::run() {
             raw_frame.copyTo(frame_);
         }
 
-        // Display the frame (placeholder for future overlay rendering)
-        cv::imshow(settings_.window_name, raw_frame);
+        // Run the pipeline (HandTracker inference) if available
+        if (mediator_) {
+            mediator_->processFrame(raw_frame);
+        }
+
+        // Render overlay on a working copy
+        cv::Mat display_frame = raw_frame.clone();
+        if (mediator_) {
+            mediator_->renderOverlay(display_frame);
+        }
+
+        // Display the frame with overlay
+        cv::imshow(settings_.window_name, display_frame);
 
         // Process keyboard input
         int key = cv::waitKey(1);
@@ -69,12 +95,11 @@ cv::Mat Application::currentFrame() const {
 
 void Application::setCameraSource(CameraSource source) {
     if (settings_.active_source == source && capture_.isOpened()) {
-        return;  // Already using this source
+        return;
     }
 
     settings_.active_source = source;
 
-    // Release the old camera before trying the new one
     if (capture_.isOpened()) {
         capture_.release();
     }
@@ -97,7 +122,6 @@ bool Application::isRunning() const {
 }
 
 bool Application::initCamera() {
-    // First, try the configured device path for the current source
     std::string primary_path = settings_.activeDevicePath();
     std::cout << "[Application] Trying camera: " << primary_path << "\n";
 
@@ -106,7 +130,6 @@ bool Application::initCamera() {
         return true;
     }
 
-    // If phone cam was requested but failed, fall back to laptop
     if (settings_.active_source == CameraSource::Phone) {
         std::cout << "[Application] Phone camera unavailable. Falling back to laptop.\n";
         settings_.active_source = CameraSource::Laptop;
@@ -128,7 +151,6 @@ bool Application::tryOpenCamera(const std::string& device_path) {
         return false;
     }
 
-    // Give the camera a moment to initialise and grab a test frame
     cv::Mat test_frame;
     for (int attempt = 0; attempt < 5; ++attempt) {
         if (capture_.read(test_frame) && !test_frame.empty()) {
@@ -137,7 +159,6 @@ bool Application::tryOpenCamera(const std::string& device_path) {
         cv::waitKey(50);
     }
 
-    // Camera opened but didn't produce valid frames — release it
     capture_.release();
     return false;
 }
@@ -147,13 +168,26 @@ void Application::handleKeyInput(int key) {
         std::cout << "[Application] ESC pressed. Shutting down.\n";
         running_ = false;
     } else if (key == 'c' || key == 'C') {
-        // Toggle between phone and laptop camera
         CameraSource new_source = (settings_.active_source == CameraSource::Laptop)
             ? CameraSource::Phone
             : CameraSource::Laptop;
         std::cout << "[Application] Toggling camera to: "
                   << (new_source == CameraSource::Laptop ? "Laptop" : "Phone") << "\n";
         setCameraSource(new_source);
+    } else if (key == 's' || key == 'S') {
+        if (mediator_) {
+            mediator_->toggleFullSkeleton();
+            std::cout << "[Application] Skeleton mode: "
+                      << (mediator_->showFullSkeleton() ? "Full" : "Finger tips only")
+                      << "\n";
+        }
+    } else if (key == 'd' || key == 'D') {
+        if (mediator_) {
+            mediator_->toggleDebugOverlay();
+            std::cout << "[Application] Debug overlay: "
+                      << (mediator_->showDebugOverlay() ? "ON" : "OFF")
+                      << "\n";
+        }
     }
 }
 

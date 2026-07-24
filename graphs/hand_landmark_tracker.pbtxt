@@ -1,0 +1,43 @@
+# Custom CV-Keyboard graph: Hand landmark tracking only (no rendering).
+# Uses MediaPipe's HandLandmarkTrackingCpu subgraph.
+#
+# Input:  CPU image (ImageFrame, RGB)
+# Output: multi_hand_landmarks (std::vector<NormalizedLandmarkList>)
+#         multi_handedness      (std::vector<ClassificationList>)
+
+input_stream: "input_video"
+
+output_stream: "multi_hand_landmarks"
+output_stream: "multi_handedness"
+
+# Generates side packet containing max number of hands to detect/track.
+node {
+  calculator: "ConstantSidePacketCalculator"
+  output_side_packet: "PACKET:num_hands"
+  node_options: {
+    [type.googleapis.com/mediapipe.ConstantSidePacketCalculatorOptions]: {
+      packet { int_value: 2 }
+    }
+  }
+}
+
+# Provides the optional MODEL_COMPLEXITY side packet (default 1 = full).
+node {
+  calculator: "ConstantSidePacketCalculator"
+  output_side_packet: "PACKET:model_complexity"
+  node_options: {
+    [type.googleapis.com/mediapipe.ConstantSidePacketCalculatorOptions]: {
+      packet { int_value: 1 }
+    }
+  }
+}
+
+# Detects/tracks hand landmarks.
+node {
+  calculator: "HandLandmarkTrackingCpu"
+  input_stream: "IMAGE:input_video"
+  input_side_packet: "NUM_HANDS:num_hands"
+  input_side_packet: "MODEL_COMPLEXITY:model_complexity"
+  output_stream: "LANDMARKS:multi_hand_landmarks"
+  output_stream: "HANDEDNESS:multi_handedness"
+}
