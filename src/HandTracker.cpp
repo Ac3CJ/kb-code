@@ -31,6 +31,7 @@ struct HandTracker::Impl {
 
     std::mutex mutex_;
     std::vector<HandData> cached_hands_;
+    int64_t latest_timestamp_us_ = 0;
 
     ~Impl() {
         if (initialised_) {
@@ -84,10 +85,12 @@ bool HandTracker::init() {
         [this](const mediapipe::Packet& packet) -> absl::Status {
             if (packet.IsEmpty()) return absl::OkStatus();
 
+            int64_t packet_ts = packet.Timestamp().Value();
             const auto& multi_hand_landmarks =
                 packet.Get<std::vector<mediapipe::NormalizedLandmarkList>>();
 
             std::lock_guard<std::mutex> lock(impl_->mutex_);
+            impl_->latest_timestamp_us_ = packet_ts;
             
             if (multi_hand_landmarks.empty()) {
                 impl_->cached_hands_.clear();
@@ -106,6 +109,7 @@ bool HandTracker::init() {
                     impl_->cached_hands_[h].landmarks[i].confidence = static_cast<float>(src.visibility());
                 }
                 impl_->cached_hands_[h].hand_confidence = 1.0f;
+                impl_->cached_hands_[h].timestamp_us = packet_ts;
             }
 
             return absl::OkStatus();
@@ -163,12 +167,16 @@ bool HandTracker::isInitialised() const {
     return impl_->initialised_;
 }
 
-std::vector<HandData> HandTracker::detect(const cv::Mat& frame) {
+int64_t HandTracker::latestTimestamp() const {
+    std::lock_guard<std::mutex> lock(impl_->mutex_);
+    return impl_->latest_timestamp_us_;
+}
+
+std::vector<HandData> HandTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
     if (!impl_->initialised_) {
         return {};
     }
 
-    // Convert BGR → RGB
     cv::Mat rgb_frame;
     cv::cvtColor(frame, rgb_frame, cv::COLOR_BGR2RGB);
 
@@ -180,8 +188,6 @@ std::vector<HandData> HandTracker::detect(const cv::Mat& frame) {
     rgb_frame.copyTo(input_frame_mat);
 
     // Send frame into the graph asynchronously
-    int64_t timestamp_us =
-        static_cast<int64_t>(cv::getTickCount() * 1e6 / cv::getTickFrequency());
     auto status = impl_->graph_.AddPacketToInputStream(
         kInputStream,
         mediapipe::Adopt(input_frame.release())

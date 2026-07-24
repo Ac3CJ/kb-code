@@ -48,7 +48,18 @@ bool Mediator::isInitialised() const {
 }
 
 void Mediator::processFrame(const cv::Mat& frame) {
-    auto hands = hand_tracker_->detect(frame);
+    int64_t ts_us = static_cast<int64_t>(cv::getTickCount() * 1e6 / cv::getTickFrequency());
+    
+    // Push the copy into thread-safe ring buffer
+    {
+        std::lock_guard<std::mutex> lock(buffer_mutex_);
+        frame_buffer_.emplace_back(ts_us, frame.clone());
+        while (frame_buffer_.size() > kMaxBufferSize) {
+            frame_buffer_.pop_front(); // Prevent memory overflow if UI stalls
+        }
+    }
+
+    auto hands = hand_tracker_->detect(frame, ts_us);
     {
         std::lock_guard<std::mutex> lock(hands_mutex_);
         latest_hands_ = std::move(hands);
@@ -64,6 +75,28 @@ std::vector<HandData> Mediator::latestHands() const {
 // Overlay rendering
 // ---------------------------------------------------------------------------
 void Mediator::renderOverlay(cv::Mat& frame) {
+    int64_t target_ts = hand_tracker_->latestTimestamp();
+
+    if (target_ts > 0) {
+        std::lock_guard<std::mutex> lock(buffer_mutex_);
+        auto it = frame_buffer_.begin();
+        while (it != frame_buffer_.end()) {
+            if (it->first == target_ts) {
+                // Exact timestamp match found. Overwrite live camera frame with synchronized frame.
+                it->second.copyTo(frame);
+                // Clean up: Erase this frame and all older frames
+                frame_buffer_.erase(frame_buffer_.begin(), std::next(it));
+                break;
+            } else if (it->first < target_ts) {
+                // Older than current inference; discard to prevent memory leaks
+                it = frame_buffer_.erase(it);
+            } else {
+                // We reached frames newer than target_ts without finding an exact match
+                break;
+            }
+        }
+    }
+
     if (show_grid_) {
         drawGrid(frame, 100, 0.35); // 100px step, 35% opacity
     }

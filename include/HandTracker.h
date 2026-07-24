@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <cstdint>
 
 namespace cv_keyboard {
 
@@ -27,6 +28,7 @@ struct HandData {
 
     /// Which hand this is (0 = undefined, 1 = left, 2 = right)
     int handedness = 0;
+    int64_t timestamp_us = 0;
 
     HandData() : landmarks(21) {}
 };
@@ -88,9 +90,9 @@ public:
     bool init();
 
     /// Run MediaPipe hand landmark inference on the given frame.
-    /// Returns detected hands (0, 1, or 2).
-    /// The frame should be in BGR format (standard OpenCV output).
-    std::vector<HandData> detect(const cv::Mat& frame);
+    std::vector<HandData> detect(const cv::Mat& frame, int64_t timestamp_us);
+
+    int64_t latestTimestamp() const;
 
     /// Check whether the tracker has been successfully initialised.
     bool isInitialised() const;

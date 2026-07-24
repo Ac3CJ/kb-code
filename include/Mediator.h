@@ -5,6 +5,9 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <deque>
+#include <utility>
+#include <cstdint>
 
 #include "HandTracker.h"
 
@@ -52,10 +55,14 @@ public:
 
 private:
     void drawGrid(cv::Mat& frame, int step = 100, double alpha = 0.4) const;
-    
+
     std::unique_ptr<HandTracker> hand_tracker_;
     std::vector<HandData> latest_hands_;
     mutable std::mutex hands_mutex_;
+
+    static constexpr size_t kMaxBufferSize = 15; // Buffers ~250ms at 60 FPS
+    std::deque<std::pair<int64_t, cv::Mat>> frame_buffer_;
+    mutable std::mutex buffer_mutex_;
 
     bool show_full_skeleton_ = false;
     bool show_debug_overlay_ = false;
