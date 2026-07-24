@@ -48,6 +48,10 @@ void Application::run() {
         return;
     }
 
+    // Declare display_frame OUTSIDE the loop.
+    // Its internal memory buffer will be allocated once and recycled indefinitely.
+    cv::Mat display_frame;
+
     while (running_) {
         cv::Mat raw_frame;
         if (!capture_.read(raw_frame)) {
@@ -56,10 +60,11 @@ void Application::run() {
             continue;
         }
 
-        // Store the frame under the mutex so the overlay thread can read it
+        // O(1) header assignment. Bumps OpenCV refcount instead of copying 2MB of pixel data.
+        // If VideoCapture needs to modify raw_frame next frame, OpenCV will automatically detach.
         {
             std::lock_guard<std::mutex> lock(frame_mutex_);
-            raw_frame.copyTo(frame_);
+            frame_ = raw_frame;
         }
 
         // Run the pipeline (HandTracker inference) if available
@@ -67,10 +72,11 @@ void Application::run() {
             mediator_->processFrame(raw_frame);
         }
 
-        // Render overlay on a working copy
-        cv::Mat display_frame = raw_frame.clone();
+        // Render overlay without redundant cloning
         if (mediator_) {
-            mediator_->renderOverlay(display_frame);
+            mediator_->renderOverlay(raw_frame, display_frame);
+        } else {
+            display_frame = raw_frame; // Zero-copy fallback
         }
 
         // Display the frame with overlay

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <array>
 
 namespace cv_keyboard {
 
@@ -21,7 +22,7 @@ struct Landmark {
 /// Complete set of 21 landmarks for one detected hand
 struct HandData {
     /// MediaPipe 21-point hand landmarks (indices 0–20)
-    std::vector<Landmark> landmarks;
+    std::array<Landmark, 21> landmarks;
 
     /// Confidence that a hand was detected in this frame
     float hand_confidence = 0.0f;
@@ -30,7 +31,7 @@ struct HandData {
     int handedness = 0;
     int64_t timestamp_us = 0;
 
-    HandData() : landmarks(21) {}
+    HandData() = default;
 };
 
 /// Hand landmark indices for finger tips
@@ -90,7 +91,7 @@ public:
     bool init();
 
     /// Run MediaPipe hand landmark inference on the given frame.
-    std::vector<HandData> detect(const cv::Mat& frame, int64_t timestamp_us);
+    std::shared_ptr<const std::vector<HandData>> detect(const cv::Mat& frame, int64_t timestamp_us);
 
     int64_t latestTimestamp() const;
 

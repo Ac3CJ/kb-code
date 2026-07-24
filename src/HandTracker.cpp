@@ -30,7 +30,7 @@ struct HandTracker::Impl {
     bool initialised_ = false;
 
     std::mutex mutex_;
-    std::vector<HandData> cached_hands_;
+    std::shared_ptr<std::vector<HandData>> cached_hands_ = std::make_shared<std::vector<HandData>>();
     int64_t latest_timestamp_us_ = 0;
 
     ~Impl() {
@@ -93,25 +93,24 @@ bool HandTracker::init() {
             impl_->latest_timestamp_us_ = packet_ts;
             
             if (multi_hand_landmarks.empty()) {
-                impl_->cached_hands_.clear();
+                impl_->cached_hands_->clear();
                 return absl::OkStatus();
             }
 
-            impl_->cached_hands_.resize(multi_hand_landmarks.size());
+            impl_->cached_hands_->resize(multi_hand_landmarks.size());
             for (size_t h = 0; h < multi_hand_landmarks.size(); ++h) {
                 const auto& landmark_list = multi_hand_landmarks[h];
                 int count = std::min(landmark_list.landmark_size(), 21);
                 for (int i = 0; i < count; ++i) {
                     const auto& src = landmark_list.landmark(i);
-                    impl_->cached_hands_[h].landmarks[i].x = static_cast<float>(src.x());
-                    impl_->cached_hands_[h].landmarks[i].y = static_cast<float>(src.y());
-                    impl_->cached_hands_[h].landmarks[i].z = static_cast<float>(src.z());
-                    impl_->cached_hands_[h].landmarks[i].confidence = static_cast<float>(src.visibility());
+                    (*impl_->cached_hands_)[h].landmarks[i].x = static_cast<float>(src.x());
+                    (*impl_->cached_hands_)[h].landmarks[i].y = static_cast<float>(src.y());
+                    (*impl_->cached_hands_)[h].landmarks[i].z = static_cast<float>(src.z());
+                    (*impl_->cached_hands_)[h].landmarks[i].confidence = static_cast<float>(src.visibility());
                 }
-                impl_->cached_hands_[h].hand_confidence = 1.0f;
-                impl_->cached_hands_[h].timestamp_us = packet_ts;
+                (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
+                (*impl_->cached_hands_)[h].timestamp_us = packet_ts;
             }
-
             return absl::OkStatus();
         });
 
@@ -131,13 +130,13 @@ bool HandTracker::init() {
 
             std::lock_guard<std::mutex> lock(impl_->mutex_);
             for (size_t h = 0; h < multi_handedness.size(); ++h) {
-                if (h < impl_->cached_hands_.size() &&
+                if (h < impl_->cached_hands_->size() &&
                     multi_handedness[h].classification_size() > 0) {
                     const auto& cls = multi_handedness[h].classification(0);
                     if (cls.label() == "Left") {
-                        impl_->cached_hands_[h].handedness = 1;
+                        (*impl_->cached_hands_)[h].handedness = 1;
                     } else if (cls.label() == "Right") {
-                        impl_->cached_hands_[h].handedness = 2;
+                        (*impl_->cached_hands_)[h].handedness = 2;
                     }
                 }
             }
@@ -172,20 +171,22 @@ int64_t HandTracker::latestTimestamp() const {
     return impl_->latest_timestamp_us_;
 }
 
-std::vector<HandData> HandTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
+std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
     if (!impl_->initialised_) {
         return {};
     }
 
-    cv::Mat rgb_frame;
-    cv::cvtColor(frame, rgb_frame, cv::COLOR_BGR2RGB);
-
-    // Wrap into a MediaPipe ImageFrame
+    // 1. Allocate the MediaPipe ImageFrame FIRST
     auto input_frame = std::make_unique<mediapipe::ImageFrame>(
-        mediapipe::ImageFormat::SRGB, rgb_frame.cols, rgb_frame.rows,
+        mediapipe::ImageFormat::SRGB, frame.cols, frame.rows,
         mediapipe::ImageFrame::kDefaultAlignmentBoundary);
+        
+    // 2. Get a Mat wrapper pointing directly to the ImageFrame's internal memory
     cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
-    rgb_frame.copyTo(input_frame_mat);
+
+    // 3. Convert BGR directly into the MediaPipe buffer!
+    // This eliminates the temporary rgb_frame allocation and the secondary .copyTo() call.
+    cv::cvtColor(frame, input_frame_mat, cv::COLOR_BGR2RGB);
 
     // Send frame into the graph asynchronously
     auto status = impl_->graph_.AddPacketToInputStream(
