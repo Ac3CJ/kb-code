@@ -18,7 +18,7 @@ struct Settings {
     std::string laptop_device_path = "/dev/video0";
 
     /// Device path for the phone camera (via V4L2 / scrcpy)
-    std::string phone_device_path = "/dev/video2";
+    std::string phone_device_path = "/dev/video10";
 
     /// Window name for the debug / overlay display
     std::string window_name = "CV Keyboard";
