@@ -55,13 +55,13 @@ public:
     void renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame);
 
 private:
-    void drawGrid(cv::Mat& frame, int step = 100, double alpha = 0.4) const;
+    void drawGrid(cv::Mat& frame, int step = 100) const;
 
     std::unique_ptr<HandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
     mutable std::mutex hands_mutex_;
 
-    static constexpr size_t kMaxBufferSize = 15; // Buffers ~250ms at 60 FPS
+    static constexpr size_t kMaxBufferSize = 15; 
 
     struct BufferSlot {
         int64_t timestamp = 0;
@@ -73,6 +73,7 @@ private:
     mutable std::mutex buffer_mutex_;
 
     mutable cv::Mat cached_grid_overlay_;
+    mutable cv::Mat cached_grid_mask_; 
     mutable cv::Size last_frame_size_;
 
     bool show_full_skeleton_ = false;

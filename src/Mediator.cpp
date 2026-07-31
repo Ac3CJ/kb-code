@@ -75,18 +75,20 @@ std::shared_ptr<const std::vector<HandData>> Mediator::latestHands() const {
 // Overlay rendering
 // ---------------------------------------------------------------------------
 
-void Mediator::drawGrid(cv::Mat& frame, int step, double alpha) const {
-    // 1. Only draw the grid from scratch if we haven't yet, or if camera resolution changed!
+void Mediator::drawGrid(cv::Mat& frame, int step) const {
+    // 1. Only draw the grid and generate the mask from scratch if resolution changed
     if (cached_grid_overlay_.empty() || last_frame_size_ != frame.size()) {
         last_frame_size_ = frame.size();
         cached_grid_overlay_ = cv::Mat::zeros(frame.size(), frame.type());
         
         int width = frame.cols;
         int height = frame.rows;
-        cv::Scalar grid_color(255, 255, 255);
+        
+        // Slightly softer colors since we no longer have alpha blending
+        cv::Scalar grid_color(200, 200, 200); 
         cv::Scalar label_color(180, 180, 180);
 
-        // Draw lines
+        // Draw lines and labels
         for (int x = step; x < width; x += step) {
             cv::line(cached_grid_overlay_, cv::Point(x, 0), cv::Point(x, height), grid_color, 1);
             cv::putText(cached_grid_overlay_, std::to_string(x), cv::Point(x + 4, 15),
@@ -97,6 +99,7 @@ void Mediator::drawGrid(cv::Mat& frame, int step, double alpha) const {
             cv::putText(cached_grid_overlay_, std::to_string(y), cv::Point(4, y - 4),
                         cv::FONT_HERSHEY_SIMPLEX, 0.4, label_color, 1);
         }
+        
         // Draw intersection coordinates ONCE
         for (int x = step; x < width; x += step) {
             for (int y = step; y < height; y += step) {
@@ -105,11 +108,17 @@ void Mediator::drawGrid(cv::Mat& frame, int step, double alpha) const {
                             cv::FONT_HERSHEY_SIMPLEX, 0.3, label_color, 1);
             }
         }
+
+        // --- NEW: Generate the mask ---
+        // Any pixel in the overlay that isn't pure black (0,0,0) becomes 255 (white) in the mask.
+        cv::cvtColor(cached_grid_overlay_, cached_grid_mask_, cv::COLOR_BGR2GRAY);
+        cv::threshold(cached_grid_mask_, cached_grid_mask_, 1, 255, cv::THRESH_BINARY);
     }
 
-    // 2. Every frame, just do a lightning-fast matrix addition
-    // Only blend where the grid actually has drawings to avoid full-image math
-    cv::addWeighted(cached_grid_overlay_, alpha, frame, 1.0, 0, frame);
+    // 2. Every frame, do a lightning-fast masked copy.
+    // OpenCV iterates over the mask. If mask[x,y] == 255, it copies overlay[x,y] to frame[x,y].
+    // It entirely skips pixels where mask[x,y] == 0.
+    cached_grid_overlay_.copyTo(frame, cached_grid_mask_);
 }
 
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
@@ -143,7 +152,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
     }
 
     if (show_grid_) {
-        drawGrid(display_frame, 100, 0.35);
+        drawGrid(display_frame, 100);
     }
 
     auto hands = latestHands();
