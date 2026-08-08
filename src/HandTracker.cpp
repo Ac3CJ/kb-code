@@ -81,38 +81,42 @@ bool HandTracker::init() {
 
     // --- Asynchronously observe output streams (Non-blocking) ---
     status = impl_->graph_.ObserveOutputStream(
-        kMultiHandLandmarksStream,
-        [this](const mediapipe::Packet& packet) -> absl::Status {
-            if (packet.IsEmpty()) return absl::OkStatus();
-
-            int64_t packet_ts = packet.Timestamp().Value();
-            const auto& multi_hand_landmarks =
-                packet.Get<std::vector<mediapipe::NormalizedLandmarkList>>();
-
-            std::lock_guard<std::mutex> lock(impl_->mutex_);
-            impl_->latest_timestamp_us_ = packet_ts;
-            
-            if (multi_hand_landmarks.empty()) {
-                impl_->cached_hands_->clear();
-                return absl::OkStatus();
-            }
-
-            impl_->cached_hands_->resize(multi_hand_landmarks.size());
-            for (size_t h = 0; h < multi_hand_landmarks.size(); ++h) {
-                const auto& landmark_list = multi_hand_landmarks[h];
-                int count = std::min(landmark_list.landmark_size(), 21);
-                for (int i = 0; i < count; ++i) {
-                    const auto& src = landmark_list.landmark(i);
-                    (*impl_->cached_hands_)[h].landmarks[i].x = static_cast<float>(src.x());
-                    (*impl_->cached_hands_)[h].landmarks[i].y = static_cast<float>(src.y());
-                    (*impl_->cached_hands_)[h].landmarks[i].z = static_cast<float>(src.z());
-                    (*impl_->cached_hands_)[h].landmarks[i].confidence = static_cast<float>(src.visibility());
-                }
-                (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
-                (*impl_->cached_hands_)[h].timestamp_us = packet_ts;
-            }
+    kMultiHandLandmarksStream,
+    [this](const mediapipe::Packet& packet) -> absl::Status {
+        std::lock_guard<std::mutex> lock(impl_->mutex_);
+        
+        // Clear cached hands if the packet is empty (no hands detected)
+        if (packet.IsEmpty()) {
+            impl_->cached_hands_->clear();
             return absl::OkStatus();
-        });
+        }
+
+        int64_t packet_ts = packet.Timestamp().Value();
+        impl_->latest_timestamp_us_ = packet_ts;
+        const auto& multi_hand_landmarks =
+            packet.Get<std::vector<mediapipe::NormalizedLandmarkList>>();
+            
+        if (multi_hand_landmarks.empty()) {
+            impl_->cached_hands_->clear();
+            return absl::OkStatus();
+        }
+
+        impl_->cached_hands_->resize(multi_hand_landmarks.size());
+        for (size_t h = 0; h < multi_hand_landmarks.size(); ++h) {
+            const auto& landmark_list = multi_hand_landmarks[h];
+            int count = std::min(landmark_list.landmark_size(), 21);
+            for (int i = 0; i < count; ++i) {
+                const auto& src = landmark_list.landmark(i);
+                (*impl_->cached_hands_)[h].landmarks[i].x = static_cast<float>(src.x());
+                (*impl_->cached_hands_)[h].landmarks[i].y = static_cast<float>(src.y());
+                (*impl_->cached_hands_)[h].landmarks[i].z = static_cast<float>(src.z());
+                (*impl_->cached_hands_)[h].landmarks[i].confidence = static_cast<float>(src.visibility());
+            }
+            (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
+            (*impl_->cached_hands_)[h].timestamp_us = packet_ts;
+        }
+        return absl::OkStatus();
+    });
 
     if (!status.ok()) {
         std::cerr << "[HandTracker] Failed to observe landmarks stream: "
@@ -176,19 +180,13 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
         return {};
     }
 
-    // 1. Allocate the MediaPipe ImageFrame FIRST
     auto input_frame = std::make_unique<mediapipe::ImageFrame>(
         mediapipe::ImageFormat::SRGB, frame.cols, frame.rows,
         mediapipe::ImageFrame::kDefaultAlignmentBoundary);
         
-    // 2. Get a Mat wrapper pointing directly to the ImageFrame's internal memory
     cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
-
-    // 3. Convert BGR directly into the MediaPipe buffer!
-    // This eliminates the temporary rgb_frame allocation and the secondary .copyTo() call.
     cv::cvtColor(frame, input_frame_mat, cv::COLOR_BGR2RGB);
 
-    // Send frame into the graph asynchronously
     auto status = impl_->graph_.AddPacketToInputStream(
         kInputStream,
         mediapipe::Adopt(input_frame.release())
@@ -199,9 +197,13 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
                   << status.message() << "\n";
     }
 
-    // Non-blocking return of the latest cached hand data
+    // --- NEW: Block until the graph finishes processing the current frame ---
+    impl_->graph_.WaitUntilIdle().IgnoreError();
+
+    // Now return the freshly processed hands synchronously
     std::lock_guard<std::mutex> lock(impl_->mutex_);
     return impl_->cached_hands_;
+
 }
 
-} // namespace cv_keyboard
+}// namespace cv_keyboard

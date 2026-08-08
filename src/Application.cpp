@@ -8,7 +8,7 @@
 namespace cv_keyboard {
 
 Application::Application() {
-    cv::namedWindow(settings_.window_name, cv::WINDOW_AUTOSIZE);
+    cv::namedWindow(settings_.window_name, cv::WINDOW_NORMAL);
 
     if (!initCamera()) {
         std::cerr << "[Application] No camera available. Exiting.\n";
@@ -62,10 +62,10 @@ void Application::run() {
 
         // O(1) header assignment. Bumps OpenCV refcount instead of copying 2MB of pixel data.
         // If VideoCapture needs to modify raw_frame next frame, OpenCV will automatically detach.
-        {
-            std::lock_guard<std::mutex> lock(frame_mutex_);
-            frame_ = raw_frame;
-        }
+        // {
+        //     std::lock_guard<std::mutex> lock(frame_mutex_);
+        //     frame_ = raw_frame;
+        // }
 
         // Run the pipeline (HandTracker inference) if available
         if (mediator_) {
@@ -94,10 +94,10 @@ void Application::run() {
     }
 }
 
-cv::Mat Application::currentFrame() const {
-    std::lock_guard<std::mutex> lock(frame_mutex_);
-    return frame_.clone();
-}
+// cv::Mat Application::currentFrame() const {
+//     std::lock_guard<std::mutex> lock(frame_mutex_);
+//     return frame_.clone();
+// }
 
 void Application::setCameraSource(CameraSource source) {
     if (settings_.active_source == source && capture_.isOpened()) {

@@ -30,8 +30,7 @@ static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
 Mediator::Mediator()
-    : hand_tracker_(std::make_unique<HandTracker>()),
-      frame_pool_(kMaxBufferSize) {}
+    : hand_tracker_(std::make_unique<HandTracker>()) {}
 
 Mediator::~Mediator() = default;
 
@@ -51,15 +50,8 @@ bool Mediator::isInitialised() const {
 void Mediator::processFrame(const cv::Mat& frame) {
     int64_t ts_us = static_cast<int64_t>(cv::getTickCount() * 1e6 / cv::getTickFrequency());
     
-    {
-        std::lock_guard<std::mutex> lock(buffer_mutex_);
-        frame.copyTo(frame_pool_[write_index_].frame);
-        frame_pool_[write_index_].timestamp = ts_us;
-        write_index_ = (write_index_ + 1) % kMaxBufferSize;
-    }
-
-    // O(1) pointer assignment instead of copying vector data
     auto hands = hand_tracker_->detect(frame, ts_us);
+    
     {
         std::lock_guard<std::mutex> lock(hands_mutex_);
         latest_hands_ = std::move(hands);
@@ -122,34 +114,7 @@ void Mediator::drawGrid(cv::Mat& frame, int step) const {
 }
 
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
-    int64_t target_ts = hand_tracker_->latestTimestamp();
-    bool frame_retrieved = false;
-
-    if (target_ts > 0) {
-        std::lock_guard<std::mutex> lock(buffer_mutex_);
-        
-        for (auto& slot : frame_pool_) {
-            if (slot.timestamp == target_ts) {
-                // O(1) pointer swap instead of deep copy!
-                // display_frame takes ownership of the matched historical frame.
-                // slot.frame receives display_frame's old buffer, recycling the allocated
-                // memory back into the ring buffer for processFrame() to overwrite later!
-                std::swap(slot.frame, display_frame);
-                slot.timestamp = 0; // Mark slot as consumed
-                frame_retrieved = true;
-                break;
-            } else if (slot.timestamp > 0 && slot.timestamp < target_ts) {
-                // Older than current inference; mark as consumed so we don't hold stale timestamps
-                slot.timestamp = 0;
-            }
-        }
-    }
-
-    if (!frame_retrieved) {
-        // Fallback if no timestamp match exists: copy raw_frame into display_frame.
-        // Because display_frame persists across loops, copyTo() reuses its memory automatically.
-        raw_frame.copyTo(display_frame);
-    }
+    raw_frame.copyTo(display_frame);
 
     if (show_grid_) {
         drawGrid(display_frame, 100);
