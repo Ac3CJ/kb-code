@@ -8,6 +8,8 @@
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/file_helpers.h"
 #include "mediapipe/framework/port/status.h"
+#include "mediapipe/gpu/gpu_shared_data_internal.h"
+#include "mediapipe/gpu/gpu_buffer.h"
 
 #include <opencv2/imgproc.hpp>
 
@@ -78,6 +80,18 @@ bool HandTracker::init() {
                   << status.message() << "\n";
         return false;
     }
+
+    // Setup GPU resources for the graph
+    // auto gpu_resources = mediapipe::GpuResources::Create();
+    // if (gpu_resources.ok()) {
+    //     // Change kGpuSharedDataService to kGpuService here:
+    //     status = impl_->graph_.SetServiceObject(
+    //         mediapipe::kGpuService, std::move(gpu_resources.value()));
+    //     if (!status.ok()) {
+    //         std::cerr << "[HandTracker] Failed to set GPU service: " << status.message() << "\n";
+    //         return false;
+    //     }
+    // }
 
     // --- Asynchronously observe output streams (Non-blocking) ---
     status = impl_->graph_.ObserveOutputStream(
@@ -181,11 +195,11 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
     }
 
     auto input_frame = std::make_unique<mediapipe::ImageFrame>(
-        mediapipe::ImageFormat::SRGB, frame.cols, frame.rows,
+        mediapipe::ImageFormat::SRGBA, frame.cols, frame.rows,
         mediapipe::ImageFrame::kDefaultAlignmentBoundary);
         
     cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
-    cv::cvtColor(frame, input_frame_mat, cv::COLOR_BGR2RGB);
+    cv::cvtColor(frame, input_frame_mat, cv::COLOR_BGR2RGBA);
 
     auto status = impl_->graph_.AddPacketToInputStream(
         kInputStream,

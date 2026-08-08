@@ -33,7 +33,11 @@ cc_binary(
         "@mediapipe//mediapipe/framework/formats:image_frame_opencv",
         "@mediapipe//mediapipe/framework/formats:landmark_cc_proto",
         "@mediapipe//mediapipe/framework/formats:classification_cc_proto",
-        "@mediapipe//mediapipe/modules/hand_landmark:hand_landmark_tracking_cpu",
+
+        "@mediapipe//mediapipe/modules/hand_landmark:hand_landmark_tracking_gpu",
+        "@mediapipe//mediapipe/gpu:image_frame_to_gpu_buffer_calculator",
+        "@mediapipe//mediapipe/gpu:gpu_shared_data_internal",
+        "@mediapipe//mediapipe/gpu:gpu_buffer",
 
 
         # Our custom graph subgraph (links in HandLandmarkTrackingCpu)
