@@ -43,6 +43,10 @@ public:
 private:
     void drawGrid(cv::Mat& frame, int step = 100) const;
     void drawVirtualKeyboard(cv::Mat& frame);
+    void drawPhysicalKeyboard(cv::Mat& frame);
+    void drawHands(cv::Mat& frame);
+    
+    void drawDebug(cv::Mat& frame);
 
     KeyboardMap virtual_keyboard_;
     mutable cv::Mat cached_kb_overlay_;

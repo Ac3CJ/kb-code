@@ -1,12 +1,151 @@
 #include "KeyboardMap.h"
 
+#include <iostream>
+
 namespace cv_keyboard {
 
 KeyboardMap::KeyboardMap() {
-    // Start empty. You can call loadUKLayout() during setup.
+    aruco_dict_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
+    aruco_params_ = cv::aruco::DetectorParameters::create();
+
+    kf_.init(9, 9, 0);
+    cv::setIdentity(kf_.transitionMatrix);
+    cv::setIdentity(kf_.measurementMatrix);
+
+    // Tweak these to change how much "smoothing" vs "responsiveness" you want.
+    // Smaller processNoiseCov = smoother but more lag.
+    cv::setIdentity(kf_.processNoiseCov, cv::Scalar::all(1e-1));
+    cv::setIdentity(kf_.measurementNoiseCov, cv::Scalar::all(1e-3));
+    cv::setIdentity(kf_.errorCovPost, cv::Scalar::all(1));
 }
 
 KeyboardMap::~KeyboardMap() = default;
+
+void KeyboardMap::applyKalmanFilter(cv::Mat& H) {
+    // 1. Normalize the homography matrix (Scale-invariant)
+    H /= H.at<double>(2, 2);
+    
+    // 2. Flatten the 3x3 double matrix into a 9x1 float measurement vector
+    cv::Mat measurement = cv::Mat::zeros(9, 1, CV_32F);
+    int k = 0;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            measurement.at<float>(k++) = static_cast<float>(H.at<double>(i, j));
+        }
+    }
+
+    // 3. If it's the very first frame, snap the filter directly to the measurement
+    if (!kf_initialized_) {
+        kf_.statePost = measurement.clone();
+        kf_initialized_ = true;
+    }
+
+    // 4. Run the prediction and correction steps
+    kf_.predict();
+    cv::Mat estimated = kf_.correct(measurement);
+
+    // 5. Rebuild the smoothed 9x1 vector back into our 3x3 double matrix
+    k = 0;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            H.at<double>(i, j) = static_cast<double>(estimated.at<float>(k++));
+        }
+    }
+}
+
+bool KeyboardMap::updateTransform(const cv::Mat& frame) {
+    std::vector<int> marker_ids;
+    std::vector<std::vector<cv::Point2f>> marker_corners, rejected_candidates;
+
+    // Detect all visible markers in the frame
+    cv::aruco::detectMarkers(frame, aruco_dict_, marker_corners, marker_ids, aruco_params_, rejected_candidates);
+
+    if (marker_ids.empty()) {
+        // std::cout << "[KeyboardMap] No ArUco markers detected in the current frame.\n";
+        return false; // No markers found to map
+    }
+
+    // std::cout << "[KeyboardMap] Detected " << marker_ids.size() << " ArUco markers.\n";
+
+    // TODO (Future Optimization): Compare the centers of 'marker_corners' to the previous frame's 
+    // corners here. If the deviation is < threshold, return early to save compute time.
+
+    std::vector<cv::Point2f> src_pixel_points;
+    std::vector<cv::Point2f> dst_physical_points;
+
+    for (size_t i = 0; i < marker_ids.size(); ++i) {
+        int id = marker_ids[i];
+        
+        // Find if this detected marker belongs to our virtual keyboard layout
+        auto it = std::find_if(markers_.begin(), markers_.end(), [id](const ArucoMarkerDef& m) {
+            return m.id == id;
+        });
+
+        if (it != markers_.end()) {
+            const auto& pixels = marker_corners[i];
+            
+            // Calculate the 4 physical corners of this marker in cm
+            float x_cm = it->x_u * kBaseUnitCm;
+            float y_cm = it->y_u * kBaseUnitCm;
+            float size_cm = it->size_u * kBaseUnitCm;
+
+            // ArUco returns corners clockwise starting from top-left.
+            // Push the Pixels
+            src_pixel_points.push_back(pixels[0]); // Top-Left
+            src_pixel_points.push_back(pixels[1]); // Top-Right
+            src_pixel_points.push_back(pixels[2]); // Bottom-Right
+            src_pixel_points.push_back(pixels[3]); // Bottom-Left
+
+            // Push the corresponding Physical Coordinates (cm)
+            dst_physical_points.push_back(cv::Point2f(x_cm, y_cm));                             // Top-Left
+            dst_physical_points.push_back(cv::Point2f(x_cm + size_cm, y_cm));                   // Top-Right
+            dst_physical_points.push_back(cv::Point2f(x_cm + size_cm, y_cm + size_cm));         // Bottom-Right
+            dst_physical_points.push_back(cv::Point2f(x_cm, y_cm + size_cm));                   // Bottom-Left
+        }
+    }
+
+    // OpenCV requires a minimum of 4 points (1 full marker) to calculate homography
+    if (src_pixel_points.size() >= 4) {
+        // Pixels -> Physical (For touch detection)
+        homography_ = cv::findHomography(src_pixel_points, dst_physical_points, cv::RANSAC);
+        
+        if (!homography_.empty()) {
+            applyKalmanFilter(homography_);
+            inv_homography_ = homography_.inv();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+cv::Point2f KeyboardMap::pixelToPhysical(float px, float py) const {
+    if (homography_.empty()) {
+        return cv::Point2f(-1.0f, -1.0f);
+    }
+
+    std::vector<cv::Point2f> src_point = { cv::Point2f(px, py) };
+    std::vector<cv::Point2f> dst_point;
+    
+    // Apply the 3x3 matrix to shift the pixel into the flat physical 'cm' plane
+    cv::perspectiveTransform(src_point, dst_point, homography_);
+    
+    return dst_point[0];
+}
+
+cv::Point2f KeyboardMap::physicalToPixel(float x_cm, float y_cm) const {
+    if (inv_homography_.empty()) {
+        return cv::Point2f(-1.0f, -1.0f);
+    }
+
+    std::vector<cv::Point2f> src_point = { cv::Point2f(x_cm, y_cm) };
+    std::vector<cv::Point2f> dst_point;
+    
+    // Apply the inverse 3x3 matrix to shift the physical cm coordinate into pixel space
+    cv::perspectiveTransform(src_point, dst_point, inv_homography_);
+    
+    return dst_point[0];
+}
 
 void KeyboardMap::addRow(float start_x, float y, const std::vector<std::pair<std::string, float>>& row_data) {
     float current_x = start_x;

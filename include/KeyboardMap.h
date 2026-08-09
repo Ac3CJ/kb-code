@@ -5,6 +5,12 @@
 #include <vector>
 #include <unordered_map>
 
+// OpenCV includes for Homography and ArUco
+#include <opencv2/core.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/aruco.hpp>
+#include <opencv2/video/tracking.hpp>
+
 namespace cv_keyboard {
 
 /// Base physical unit in centimeters
@@ -39,6 +45,15 @@ public:
     /// Populates the map with the standard UK ISO layout
     void loadUKLayout();
 
+    /// Process the frame to find ArUco markers and update the homography matrix.
+    /// Takes the frame by reference to avoid copying memory.
+    bool updateTransform(const cv::Mat& frame);
+
+    /// Map a camera pixel coordinate to a physical physical coordinate (in cm)
+    /// using the active homography matrix.
+    cv::Point2f pixelToPhysical(float px, float py) const;
+    cv::Point2f physicalToPixel(float x_cm, float y_cm) const;
+
     /// Returns the key ID at the given physical coordinates (in cm).
     /// Returns an empty string if no key is found at that location.
     std::string getKeyAt(float x_cm, float y_cm) const;
@@ -46,6 +61,7 @@ public:
     /// Getters for rendering or homography calculation
     const std::vector<KeyDefinition>& getKeys() const { return keys_; }
     const std::vector<ArucoMarkerDef>& getMarkers() const { return markers_; }
+    bool hasValidTransform() const { return !homography_.empty(); }
 
 private:
     std::vector<KeyDefinition> keys_;
@@ -53,6 +69,17 @@ private:
     
     // Internal helper to place a row of keys sequentially
     void addRow(float start_x, float y, const std::vector<std::pair<std::string, float>>& row_data);
+
+    // Vision / Mapping components
+    cv::Mat homography_;     // Pixels -> Physical matrix
+    cv::Mat inv_homography_; // Physical -> Pixels matrix
+
+    void applyKalmanFilter(cv::Mat& H);
+    cv::KalmanFilter kf_;
+    bool kf_initialized_ = false;
+
+    cv::Ptr<cv::aruco::Dictionary> aruco_dict_;
+    cv::Ptr<cv::aruco::DetectorParameters> aruco_params_;
 };
 
 } // namespace cv_keyboard

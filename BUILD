@@ -17,6 +17,12 @@ cc_binary(
     ],
     # Tells Bazel where to find headers so `#include "HandTracker.h"` works seamlessly
     includes = ["include"],
+    
+    linkopts = [
+        "-lopencv_aruco",
+        "-lopencv_calib3d",
+    ],
+
     data = [
         # Custom graph definition (loaded at runtime via runfiles)
         "//graphs:hand_landmark_tracker.pbtxt",

@@ -49,8 +49,9 @@ bool Mediator::isInitialised() const {
 }
 
 void Mediator::processFrame(const cv::Mat& frame) {
+    virtual_keyboard_.updateTransform(frame);
+
     int64_t ts_us = static_cast<int64_t>(cv::getTickCount() * 1e6 / cv::getTickFrequency());
-    
     auto hands = hand_tracker_->detect(frame, ts_us);
     
     {
@@ -165,24 +166,58 @@ void Mediator::drawVirtualKeyboard(cv::Mat& frame) {
     cached_kb_overlay_.copyTo(frame, cached_kb_mask_);
 }
 
-void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
-    raw_frame.copyTo(display_frame);
-
-    if (show_grid_) {
-        drawGrid(display_frame, 100);
+void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
+    if (!virtual_keyboard_.hasValidTransform()) {
+        return; // Don't draw anything if the ArUco markers aren't visible
     }
 
-    if (show_keyboard_) {
-        drawVirtualKeyboard(display_frame);
-    }
+    cv::Scalar border_color(0, 255, 0);   // Green
+    cv::Scalar text_color(255, 255, 255); // White
 
+    for (const auto& key : virtual_keyboard_.getKeys()) {
+        float x = key.x_cm();
+        float y = key.y_cm();
+        float w = key.width_cm();
+        float h = key.height_cm();
+
+        // 1. Map all 4 physical corners of the key to camera pixels
+        cv::Point2f p1 = virtual_keyboard_.physicalToPixel(x, y);
+        cv::Point2f p2 = virtual_keyboard_.physicalToPixel(x + w, y);
+        cv::Point2f p3 = virtual_keyboard_.physicalToPixel(x + w, y + h);
+        cv::Point2f p4 = virtual_keyboard_.physicalToPixel(x, y + h);
+
+        std::vector<cv::Point> pts = {
+            cv::Point(p1.x, p1.y),
+            cv::Point(p2.x, p2.y),
+            cv::Point(p3.x, p3.y),
+            cv::Point(p4.x, p4.y)
+        };
+
+        // 2. Draw the warped quadrilateral 
+        std::vector<std::vector<cv::Point>> contours = { pts };
+        cv::polylines(frame, contours, true, border_color, 2);
+
+        // 3. Center the text roughly by averaging the 4 corners
+        int center_x = (pts[0].x + pts[1].x + pts[2].x + pts[3].x) / 4;
+        int center_y = (pts[0].y + pts[1].y + pts[2].y + pts[3].y) / 4;
+
+        int baseline = 0;
+        cv::Size text_size = cv::getTextSize(key.id, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseline);
+        
+        cv::putText(frame, key.id, 
+                    cv::Point(center_x - text_size.width / 2, center_y + text_size.height / 2),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
+    }
+}
+
+void Mediator::drawHands(cv::Mat& frame) {
     auto hands = latestHands();
     if (!hands || hands->empty()) {
         return;
     }
 
-    int frame_w = display_frame.cols;
-    int frame_h = display_frame.rows;
+    int frame_w = frame.cols;
+    int frame_h = frame.rows;
 
     // Drawing hands and landmarks
     for (size_t h = 0; h < hands->size(); ++h) {
@@ -190,7 +225,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
 
         // Draw hand label (left/right/unknown)
         std::string hand_label = "Hand " + std::to_string(h + 1);
-        cv::putText(display_frame, hand_label, cv::Point(10, 30 + static_cast<int>(h) * 25),
+        cv::putText(frame, hand_label, cv::Point(10, 30 + static_cast<int>(h) * 25),
                     cv::FONT_HERSHEY_SIMPLEX, 0.6, kColorHandLabel, 2);
 
         if (show_full_skeleton_) {
@@ -199,10 +234,10 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
                 int px = static_cast<int>(hand.landmarks[i].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[i].y * frame_h);
 
-                cv::circle(display_frame, cv::Point(px, py), kLandmarkRadius,
+                cv::circle(frame, cv::Point(px, py), kLandmarkRadius,
                            kColorLandmark, -1);
 
-                cv::putText(display_frame, std::to_string(i),
+                cv::putText(frame, std::to_string(i),
                             cv::Point(px + 5, py - 5),
                             cv::FONT_HERSHEY_SIMPLEX, 0.35, kColorLandmark, 1);
             }
@@ -218,7 +253,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
                     static_cast<int>(hand.landmarks[i1].x * frame_w),
                     static_cast<int>(hand.landmarks[i1].y * frame_h));
 
-                cv::line(display_frame, p0, p1, kColorConnection, kConnectionThickness);
+                cv::line(frame, p0, p1, kColorConnection, kConnectionThickness);
             }
         } else {
             // --- Finger tips only mode ---
@@ -228,7 +263,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
                 int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
 
-                cv::circle(display_frame, cv::Point(px, py), kFingerTipRadius,
+                cv::circle(frame, cv::Point(px, py), kFingerTipRadius,
                            kFingerTipColors[i], -1);
             }
         }
@@ -238,7 +273,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
             int text_x = 10;
             int text_y = 80 + static_cast<int>(h) * 140;
 
-            cv::putText(display_frame, hand_label + " finger tips:",
+            cv::putText(frame, hand_label + " finger tips:",
                         cv::Point(text_x, text_y),
                         cv::FONT_HERSHEY_SIMPLEX, kFontScale, kColorDebugText,
                         kFontThickness);
@@ -259,18 +294,34 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
                     << " conf=" << std::fixed << std::setprecision(2)
                     << conf;
 
-                cv::putText(display_frame, oss.str(),
+                cv::putText(frame, oss.str(),
                             cv::Point(text_x, text_y + 20 + i * 20),
                             cv::FONT_HERSHEY_SIMPLEX, kFontScale,
                             kColorDebugText, kFontThickness);
 
                 std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
             
-                cv::putText(display_frame, coord_text, cv::Point(px + 10, py - 10),
+                cv::putText(frame, coord_text, cv::Point(px + 10, py - 10),
                             cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);
             }
         }
     }
+}
+
+void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
+    raw_frame.copyTo(display_frame);
+
+    if (show_grid_) {
+        drawGrid(display_frame, 100);
+    }
+
+    if (show_keyboard_) {
+        // drawVirtualKeyboard(display_frame);
+        drawPhysicalKeyboard(display_frame);
+    }
+
+    drawHands(display_frame);
+
 }
 
 } // namespace cv_keyboard
