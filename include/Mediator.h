@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include "HandTracker.h"
+#include "KeyboardMap.h"
 
 namespace cv_keyboard {
 
@@ -33,10 +34,20 @@ public:
     void setShowGrid(bool show) { show_grid_ = show; }
     void toggleGrid() { show_grid_ = !show_grid_; }
 
+    bool showKeyboard() const { return show_keyboard_; }
+    void setShowKeyboard(bool show) { show_keyboard_ = show; }
+    void toggleKeyboard() { show_keyboard_ = !show_keyboard_; }
+
     void renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame);
 
 private:
     void drawGrid(cv::Mat& frame, int step = 100) const;
+    void drawVirtualKeyboard(cv::Mat& frame);
+
+    KeyboardMap virtual_keyboard_;
+    mutable cv::Mat cached_kb_overlay_;
+    mutable cv::Mat cached_kb_mask_;
+    bool show_keyboard_ = false;
 
     std::unique_ptr<HandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;

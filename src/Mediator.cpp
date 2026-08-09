@@ -23,8 +23,8 @@ static const cv::Scalar kColorConnection(200, 200, 200);   // Light grey
 static const cv::Scalar kColorDebugText(0, 255, 255);      // Yellow
 static const cv::Scalar kColorHandLabel(0, 165, 255);      // Orange
 
-static constexpr int kFingerTipRadius = 8;
-static constexpr int kLandmarkRadius = 4;
+static constexpr int kFingerTipRadius = 4;
+static constexpr int kLandmarkRadius = 3;
 static constexpr int kConnectionThickness = 2;
 static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
@@ -40,6 +40,7 @@ bool Mediator::init() {
         return false;
     }
     std::cout << "[Mediator] Pipeline initialised.\n";
+    virtual_keyboard_.loadUKLayout();
     return true;
 }
 
@@ -113,11 +114,66 @@ void Mediator::drawGrid(cv::Mat& frame, int step) const {
     cached_grid_overlay_.copyTo(frame, cached_grid_mask_);
 }
 
+void Mediator::drawVirtualKeyboard(cv::Mat& frame) {
+    if (cached_kb_overlay_.empty() || last_frame_size_ != frame.size()) {
+        last_frame_size_ = frame.size();
+        cached_kb_overlay_ = cv::Mat::zeros(frame.size(), frame.type());
+        
+        // We want the keyboard to take up exactly half the screen width
+        float target_px_width = frame.cols / 2.0f;
+        float target_px_height = frame.rows / 2.0f; // Optional: limit height to half the screen
+        
+        // Our UK layout is exactly 15u wide
+        float kb_width_u = 15.0f; 
+        
+        // Calculate pixels per 'u'
+        float px_per_u = target_px_width / kb_width_u;
+        
+        // Offset to push it to the top right corner
+        float offset_x = frame.cols - target_px_width - 20.0f; // Slight 20px padding from the right edge
+        float offset_y = frame.rows - target_px_height - 20.0f; // Slight 20px padding from the top edge
+
+        cv::Scalar border_color(0, 255, 0); // Green
+        cv::Scalar text_color(255, 255, 255); // White
+
+        for (const auto& key : virtual_keyboard_.getKeys()) {
+            // Convert 'u' coordinates to pixel coordinates
+            int px = static_cast<int>(offset_x + (key.x_u * px_per_u));
+            int py = static_cast<int>(offset_y + (key.y_u * px_per_u));
+            int pw = static_cast<int>(key.width_u * px_per_u);
+            int ph = static_cast<int>(key.height_u * px_per_u);
+
+            // Draw the key border
+            cv::rectangle(cached_kb_overlay_, cv::Rect(px, py, pw, ph), border_color, 2);
+
+            // Center the text inside the key
+            int baseline = 0;
+            cv::Size text_size = cv::getTextSize(key.id, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseline);
+            int text_x = px + (pw - text_size.width) / 2;
+            int text_y = py + (ph + text_size.height) / 2;
+
+            cv::putText(cached_kb_overlay_, key.id, cv::Point(text_x, text_y),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
+        }
+
+        // Generate the lightning-fast copy mask
+        cv::cvtColor(cached_kb_overlay_, cached_kb_mask_, cv::COLOR_BGR2GRAY);
+        cv::threshold(cached_kb_mask_, cached_kb_mask_, 1, 255, cv::THRESH_BINARY);
+    }
+
+    // Drop it onto the frame
+    cached_kb_overlay_.copyTo(frame, cached_kb_mask_);
+}
+
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
     raw_frame.copyTo(display_frame);
 
     if (show_grid_) {
         drawGrid(display_frame, 100);
+    }
+
+    if (show_keyboard_) {
+        drawVirtualKeyboard(display_frame);
     }
 
     auto hands = latestHands();
@@ -128,6 +184,7 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
     int frame_w = display_frame.cols;
     int frame_h = display_frame.rows;
 
+    // Drawing hands and landmarks
     for (size_t h = 0; h < hands->size(); ++h) {
         const auto& hand = (*hands)[h];
 
@@ -176,18 +233,6 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
             }
         }
 
-        for (int i = 0; i < 5; ++i) {
-            int idx = FINGER_TIP_INDICES[i];
-
-            int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
-            int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
-
-            std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
-            
-            cv::putText(display_frame, coord_text, cv::Point(px + 10, py - 10),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);
-        }
-
         // --- Debug overlay ---
         if (show_debug_overlay_) {
             int text_x = 10;
@@ -204,16 +249,25 @@ void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
                 int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
 
+                float conf = hand.hand_confidence;
+
                 std::ostringstream oss;
                 oss << tip_names[i] << " (" << idx << "): ("
                     << px << ", " << py << ") z="
                     << std::fixed << std::setprecision(3)
-                    << hand.landmarks[idx].z;
+                    << hand.landmarks[idx].z
+                    << " conf=" << std::fixed << std::setprecision(2)
+                    << conf;
 
                 cv::putText(display_frame, oss.str(),
                             cv::Point(text_x, text_y + 20 + i * 20),
                             cv::FONT_HERSHEY_SIMPLEX, kFontScale,
                             kColorDebugText, kFontThickness);
+
+                std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
+            
+                cv::putText(display_frame, coord_text, cv::Point(px + 10, py - 10),
+                            cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);
             }
         }
     }

@@ -194,6 +194,13 @@ void Application::handleKeyInput(int key) {
                       << (mediator_->showDebugOverlay() ? "ON" : "OFF")
                       << "\n";
         }
+    } else if (key == 'k' || key == 'K') {
+        if (mediator_) {
+            mediator_->toggleKeyboard();
+            std::cout << "[Application] Virtual Keyboard: "
+                      << (mediator_->showKeyboard() ? "ON" : "OFF")
+                      << "\n";
+        }
     }
 }
 

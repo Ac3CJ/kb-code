@@ -126,7 +126,7 @@ bool HandTracker::init() {
                 (*impl_->cached_hands_)[h].landmarks[i].z = static_cast<float>(src.z());
                 (*impl_->cached_hands_)[h].landmarks[i].confidence = static_cast<float>(src.visibility());
             }
-            (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
+            // (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
             (*impl_->cached_hands_)[h].timestamp_us = packet_ts;
         }
         return absl::OkStatus();
@@ -148,9 +148,10 @@ bool HandTracker::init() {
 
             std::lock_guard<std::mutex> lock(impl_->mutex_);
             for (size_t h = 0; h < multi_handedness.size(); ++h) {
-                if (h < impl_->cached_hands_->size() &&
-                    multi_handedness[h].classification_size() > 0) {
+                if (h < impl_->cached_hands_->size() && multi_handedness[h].classification_size() > 0) {
                     const auto& cls = multi_handedness[h].classification(0);
+                    (*impl_->cached_hands_)[h].hand_confidence = cls.score();
+                    
                     if (cls.label() == "Left") {
                         (*impl_->cached_hands_)[h].handedness = 1;
                     } else if (cls.label() == "Right") {
