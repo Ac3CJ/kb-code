@@ -201,6 +201,13 @@ void Application::handleKeyInput(int key) {
                       << (mediator_->showKeyboard() ? "ON" : "OFF")
                       << "\n";
         }
+    } else if (key == 'g' || key == 'G') {
+        if (mediator_) {
+            mediator_->toggleGrid();
+            std::cout << "[Application] Virtual Grid: "
+                      << (mediator_->showGrid() ? "ON" : "OFF")
+                      << "\n";
+        }
     }
 }
 

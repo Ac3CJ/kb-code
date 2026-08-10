@@ -9,6 +9,8 @@ int main() {
     std::cout << "  C    — Toggle camera source (laptop / phone)\n";
     std::cout << "  S    — Toggle skeleton mode (finger tips / full 21-point)\n";
     std::cout << "  D    — Toggle debug coordinate overlay\n";
+    std::cout << "  G    — Toggle grid overlay\n";
+    std::cout << "  K    — Toggle virtual keyboard overlay\n";
 
     cv_keyboard::Application app;
 

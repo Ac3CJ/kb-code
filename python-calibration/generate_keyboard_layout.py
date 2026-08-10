@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import fitz # PyMuPDF for PDF to PNG conversion
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import cm
@@ -16,6 +17,7 @@ ARUCO_SIZE_CM = 1.7
 ARUCO_PADDING_CM = 0.05
 LOGO_SVG_PATH = "Milky Uei Logo Black.svg" # Put your SVG path here
 OUTPUT_PDF = "Keyboard_Layout_Precision.pdf"
+OUTPUT_PNG = "Keyboard_Layout_Precision.png"
 
 # Keyboard Layout based on your C++ code
 # Use \n to split secondary/primary symbols for vertical stacking
@@ -227,6 +229,14 @@ def main():
     
     c.save()
     print("Done! PDF saved successfully.")
+    
+    print(f"Converting PDF to PNG at {OUTPUT_PNG}...")
+    doc = fitz.open(OUTPUT_PDF)
+    page = doc.load_page(0) # Load the first page
+    pix = page.get_pixmap(dpi=300) # 300 DPI for high print quality
+    pix.save(OUTPUT_PNG)
+    doc.close()
+    print("Done! PNG saved successfully.")
 
 if __name__ == "__main__":
     main()
