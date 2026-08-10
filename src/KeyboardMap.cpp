@@ -176,7 +176,7 @@ void KeyboardMap::loadUKLayout() {
     keys_.clear();
     markers_.clear();
 
-    // KEYS 
+    // Define the keys
     
     // Row 1: Numbers (Y = 0.0)
     addRow(0.0f, 0.0f, {
@@ -212,25 +212,50 @@ void KeyboardMap::loadUKLayout() {
         {"R_AltGr", 1.25f}, {"Fn", 1.25f}, {"Option", 1.25f}, {"R_Ctrl", 1.25f}
     }); // Total width: 15u
 
-
-    // ArUco Markers
+    // Define the ArUco Markers
     
-    // Top Row (above the keys)
-    markers_.push_back({0,  0.0f, -1.0f}); // Above '~' (x=0)
-    markers_.push_back({6,  4.0f, -1.0f}); // Above '4' (x=4)
-    markers_.push_back({8,  8.0f, -1.0f}); // Above '8' (x=8)
-    markers_.push_back({1, 14.0f, -1.0f}); // Above right-edge of Backspace (x=14)
+    // Map dimensions and spacing into 'u' units
+    float padding_u = 0.05f / kBaseUnitCm; // ARUCO_PADDING_CM converted to 'u'
+    float marker_size_u = 1.0f;            // ARUCO_SIZE_CM is equal to 1u
+    float board_w_u = 15.0f;
+    float board_h_u = 5.0f;
 
-    // Middle Row (Sides)
-    markers_.push_back({4, -1.0f, 2.0f});  // Left of Caps Lock (x=-1)
-    markers_.push_back({5, 15.0f, 2.0f});  // Right of Enter (x=15)
+    // Outer bounding box for the markers (top-left coordinates of the corners)
+    float left_x = -marker_size_u - padding_u;
+    float right_x = board_w_u + padding_u;
+    float top_y = -marker_size_u - padding_u;
+    float bottom_y = board_h_u + padding_u;
 
-    // Bottom Row (below the keys)
-    markers_.push_back({2,  0.0f, 5.0f});  // Below left Ctrl (x=0)
-    markers_.push_back({7,  4.0f, 5.0f});  // Below left side of Space (x=4)
-    markers_.push_back({9,  8.0f, 5.0f});  // Below right side of Space (x=8)
-    markers_.push_back({3, 14.0f, 5.0f});  // Below right Ctrl (x=14)
+    // Calculate step sizes precisely as the Python script did
+    float step_x = (right_x - left_x) / 8.0f;
+    
+    // The Python script calculated step_y based on the distance between the bottom 
+    // of the top row and the bottom of the bottom row. 
+    float py_top_bottom_edge = -padding_u;
+    float py_bot_bottom_edge = board_h_u + padding_u + marker_size_u;
+    float step_y = (py_bot_bottom_edge - py_top_bottom_edge) / 3.0f;
 
+    int marker_id = 0;
+
+    // 1st Row
+    for (int i = 0; i < 9; ++i) {
+        markers_.push_back({marker_id++, left_x + (i * step_x), top_y});
+    }
+
+    // 2nd Row
+    markers_.push_back({marker_id++, left_x, top_y + step_y});
+    markers_.push_back({marker_id++, right_x, top_y + step_y});
+
+    // 3rd Row
+    markers_.push_back({marker_id++, left_x, top_y + (2.0f * step_y)});
+    markers_.push_back({marker_id++, right_x, top_y + (2.0f * step_y)});
+
+    // 4th Row
+    for (int i = 0; i < 9; ++i) {
+        markers_.push_back({marker_id++, left_x + (i * step_x), bottom_y});
+    }
+
+    // Building ArUco Board
     std::vector<std::vector<cv::Point3f>> obj_points;
     std::vector<int> ids;
 
