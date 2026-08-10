@@ -58,6 +58,10 @@ void Mediator::processFrame(const cv::Mat& frame) {
         std::lock_guard<std::mutex> lock(hands_mutex_);
         latest_hands_ = std::move(hands);
     }
+
+    if (latest_hands_) {
+        click_processor_.process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+    }
 }
 
 std::shared_ptr<const std::vector<HandData>> Mediator::latestHands() const {
@@ -168,11 +172,12 @@ void Mediator::drawVirtualKeyboard(cv::Mat& frame) {
 
 void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
     if (!virtual_keyboard_.hasValidTransform()) {
-        return; // Don't draw anything if the ArUco markers aren't visible
+        return; 
     }
 
-    cv::Scalar border_color(0, 255, 0);   // Green
-    cv::Scalar text_color(255, 255, 255); // White
+    cv::Scalar border_color(0, 255, 0);         // Green border
+    cv::Scalar hover_fill_color(0, 165, 255);   // Orange fill (BGR)
+    cv::Scalar text_color(255, 255, 255);       // White text
 
     for (const auto& key : virtual_keyboard_.getKeys()) {
         float x = key.x_cm();
@@ -180,7 +185,7 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         float w = key.width_cm();
         float h = key.height_cm();
 
-        // 1. Map all 4 physical corners of the key to camera pixels
+        // 1. Map physical corners to camera pixels
         cv::Point2f p1 = virtual_keyboard_.physicalToPixel(x, y);
         cv::Point2f p2 = virtual_keyboard_.physicalToPixel(x + w, y);
         cv::Point2f p3 = virtual_keyboard_.physicalToPixel(x + w, y + h);
@@ -192,12 +197,24 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
             cv::Point(p3.x, p3.y),
             cv::Point(p4.x, p4.y)
         };
-
-        // 2. Draw the warped quadrilateral 
         std::vector<std::vector<cv::Point>> contours = { pts };
+
+        // 2. Check if hovered and draw a semi-transparent filled polygon
+        if (click_processor_.isHovered(key.id)) {
+            cv::Mat overlay;
+            frame.copyTo(overlay);
+            
+            // Fill the polygon on the duplicate frame
+            cv::fillPoly(overlay, contours, hover_fill_color);
+            
+            // Blend the overlay back into the original frame (50% opacity)
+            cv::addWeighted(overlay, 0.5, frame, 0.5, 0, frame);
+        }
+
+        // 3. Draw the persistent green border
         cv::polylines(frame, contours, true, border_color, 2);
 
-        // 3. Center the text roughly by averaging the 4 corners
+        // 4. Center text label inside the key polygon
         int center_x = (pts[0].x + pts[1].x + pts[2].x + pts[3].x) / 4;
         int center_y = (pts[0].y + pts[1].y + pts[2].y + pts[3].y) / 4;
 

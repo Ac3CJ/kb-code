@@ -9,6 +9,7 @@
 
 #include "HandTracker.h"
 #include "KeyboardMap.h"
+#include "ClickProcessor.h"
 
 namespace cv_keyboard {
 
@@ -56,6 +57,8 @@ private:
     std::unique_ptr<HandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
     mutable std::mutex hands_mutex_;
+
+    ClickProcessor click_processor_;
 
     mutable cv::Mat cached_grid_overlay_;
     mutable cv::Mat cached_grid_mask_; 

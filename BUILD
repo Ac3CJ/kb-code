@@ -8,12 +8,14 @@ cc_binary(
         "src/HandTracker.cpp",
         "src/Mediator.cpp",
         "src/KeyboardMap.cpp",
+        "src/ClickProcessor.cpp",
         # Move headers into srcs for cc_binary
         "include/Application.h",
         "include/HandTracker.h",
         "include/Mediator.h",
         "include/Settings.h",
         "include/KeyboardMap.h",
+        "include/ClickProcessor.h",
     ],
     # Tells Bazel where to find headers so `#include "HandTracker.h"` works seamlessly
     includes = ["include"],
