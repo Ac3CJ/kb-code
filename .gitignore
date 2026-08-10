@@ -1,3 +1,6 @@
 build/
 /bazel-*
 mediapipe/
+python-calibration/.venv/
+python-calibration/markers/
+python-calibration/calibration_images/

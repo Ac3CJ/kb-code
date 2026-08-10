@@ -17,11 +17,11 @@ namespace cv_keyboard {
 static constexpr float kBaseUnitCm = 1.7f;
 
 struct KeyDefinition {
-    std::string id;       // e.g., "A", "Enter_Top", "Space"
-    float x_u;            // X position in 'u' units (top-left)
-    float y_u;            // Y position in 'u' units (top-left)
-    float width_u;        // Width in 'u'
-    float height_u;       // Height in 'u' (usually 1.0)
+    std::string id;
+    float x_u;
+    float y_u;
+    float width_u;
+    float height_u;
     
     // Helper to get physical coordinates in cm
     float x_cm() const { return x_u * kBaseUnitCm; }
@@ -31,10 +31,10 @@ struct KeyDefinition {
 };
 
 struct ArucoMarkerDef {
-    int id;               // ArUco dictionary ID (0, 1, 2, etc.)
-    float x_u;            // X position in 'u' units (center or top-left, let's use top-left)
-    float y_u;            // Y position in 'u' units
-    float size_u = 1.0f;  // Markers are 1u x 1u
+    int id;
+    float x_u;
+    float y_u;
+    float size_u = 1.0f;
 };
 
 class KeyboardMap {
@@ -42,26 +42,18 @@ public:
     KeyboardMap();
     ~KeyboardMap();
 
-    /// Populates the map with the standard UK ISO layout
     void loadUKLayout();
-
-    /// Process the frame to find ArUco markers and update the homography matrix.
-    /// Takes the frame by reference to avoid copying memory.
     bool updateTransform(const cv::Mat& frame);
 
-    /// Map a camera pixel coordinate to a physical physical coordinate (in cm)
-    /// using the active homography matrix.
+
     cv::Point2f pixelToPhysical(float px, float py) const;
     cv::Point2f physicalToPixel(float x_cm, float y_cm) const;
-
-    /// Returns the key ID at the given physical coordinates (in cm).
-    /// Returns an empty string if no key is found at that location.
     std::string getKeyAt(float x_cm, float y_cm) const;
 
     /// Getters for rendering or homography calculation
     const std::vector<KeyDefinition>& getKeys() const { return keys_; }
     const std::vector<ArucoMarkerDef>& getMarkers() const { return markers_; }
-    bool hasValidTransform() const { return !homography_.empty(); }
+    bool hasValidTransform() const { return valid_pose_; }
 
 private:
     std::vector<KeyDefinition> keys_;
@@ -74,12 +66,23 @@ private:
     cv::Mat homography_;     // Pixels -> Physical matrix
     cv::Mat inv_homography_; // Physical -> Pixels matrix
 
+    // Kalman filter for smoothing the homography
     void applyKalmanFilter(cv::Mat& H);
     cv::KalmanFilter kf_;
     bool kf_initialized_ = false;
 
+    // Aruco detection parameters
     cv::Ptr<cv::aruco::Dictionary> aruco_dict_;
     cv::Ptr<cv::aruco::DetectorParameters> aruco_params_;
+    cv::Ptr<cv::aruco::Board> aruco_board_;
+
+    // Camera Intrinsics
+    cv::Mat camera_matrix_;
+    cv::Mat dist_coeffs_;
+
+    // 3D Pose
+    cv::Vec3d rvec_, tvec_;
+    bool valid_pose_ = false;
 };
 
 } // namespace cv_keyboard

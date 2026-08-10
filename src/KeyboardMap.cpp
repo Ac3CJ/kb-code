@@ -14,8 +14,8 @@ KeyboardMap::KeyboardMap() {
 
     // Tweak these to change how much "smoothing" vs "responsiveness" you want.
     // Smaller processNoiseCov = smoother but more lag.
-    cv::setIdentity(kf_.processNoiseCov, cv::Scalar::all(1e-1));
-    cv::setIdentity(kf_.measurementNoiseCov, cv::Scalar::all(1e-3));
+    cv::setIdentity(kf_.processNoiseCov, cv::Scalar::all(1e-2));
+    cv::setIdentity(kf_.measurementNoiseCov, cv::Scalar::all(1e-1));
     cv::setIdentity(kf_.errorCovPost, cv::Scalar::all(1));
 }
 
@@ -54,97 +54,97 @@ void KeyboardMap::applyKalmanFilter(cv::Mat& H) {
 }
 
 bool KeyboardMap::updateTransform(const cv::Mat& frame) {
-    std::vector<int> marker_ids;
-    std::vector<std::vector<cv::Point2f>> marker_corners, rejected_candidates;
-
-    // Detect all visible markers in the frame
-    cv::aruco::detectMarkers(frame, aruco_dict_, marker_corners, marker_ids, aruco_params_, rejected_candidates);
-
-    if (marker_ids.empty()) {
-        // std::cout << "[KeyboardMap] No ArUco markers detected in the current frame.\n";
-        return false; // No markers found to map
-    }
-
-    // std::cout << "[KeyboardMap] Detected " << marker_ids.size() << " ArUco markers.\n";
-
-    // TODO (Future Optimization): Compare the centers of 'marker_corners' to the previous frame's 
-    // corners here. If the deviation is < threshold, return early to save compute time.
-
-    std::vector<cv::Point2f> src_pixel_points;
-    std::vector<cv::Point2f> dst_physical_points;
-
-    for (size_t i = 0; i < marker_ids.size(); ++i) {
-        int id = marker_ids[i];
+    // 1. Lazy-Initialize a "Dummy" Camera Matrix based on frame resolution
+    if (camera_matrix_.empty()) {
+        double focal_length = frame.cols; // Reasonable guess for most webcams
+        double center_x = frame.cols / 2.0;
+        double center_y = frame.rows / 2.0;
         
-        // Find if this detected marker belongs to our virtual keyboard layout
-        auto it = std::find_if(markers_.begin(), markers_.end(), [id](const ArucoMarkerDef& m) {
-            return m.id == id;
-        });
+        // camera_matrix_ = (cv::Mat_<double>(3, 3) << 
+        //     focal_length, 0, center_x,
+        //     0, focal_length, center_y,
+        //     0, 0, 1);
 
-        if (it != markers_.end()) {
-            const auto& pixels = marker_corners[i];
+        camera_matrix_ = (cv::Mat_<double>(3, 3) << 
+            3401.30496, 0.00000, 2032.81880,
+            0.00000, 3403.65091, 1114.93330,
+            0.00000, 0.00000, 1.00000);
             
-            // Calculate the 4 physical corners of this marker in cm
-            float x_cm = it->x_u * kBaseUnitCm;
-            float y_cm = it->y_u * kBaseUnitCm;
-            float size_cm = it->size_u * kBaseUnitCm;
+        // dist_coeffs_ = cv::Mat::zeros(5, 1, CV_64F); // Assume no lens distortion for now
+        dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
+            0.37974, -2.23392, -0.00405, -0.00154, 3.27364);
 
-            // ArUco returns corners clockwise starting from top-left.
-            // Push the Pixels
-            src_pixel_points.push_back(pixels[0]); // Top-Left
-            src_pixel_points.push_back(pixels[1]); // Top-Right
-            src_pixel_points.push_back(pixels[2]); // Bottom-Right
-            src_pixel_points.push_back(pixels[3]); // Bottom-Left
-
-            // Push the corresponding Physical Coordinates (cm)
-            dst_physical_points.push_back(cv::Point2f(x_cm, y_cm));                             // Top-Left
-            dst_physical_points.push_back(cv::Point2f(x_cm + size_cm, y_cm));                   // Top-Right
-            dst_physical_points.push_back(cv::Point2f(x_cm + size_cm, y_cm + size_cm));         // Bottom-Right
-            dst_physical_points.push_back(cv::Point2f(x_cm, y_cm + size_cm));                   // Bottom-Left
-        }
     }
 
-    // OpenCV requires a minimum of 4 points (1 full marker) to calculate homography
-    if (src_pixel_points.size() >= 4) {
-        // Pixels -> Physical (For touch detection)
-        homography_ = cv::findHomography(src_pixel_points, dst_physical_points, cv::RANSAC);
+    std::vector<int> marker_ids;
+    std::vector<std::vector<cv::Point2f>> marker_corners, rejected;
+
+    // 2. Detect all visible markers
+    cv::aruco::detectMarkers(frame, aruco_dict_, marker_corners, marker_ids, aruco_params_, rejected);
+
+    if (marker_ids.empty() || !aruco_board_) {
+        valid_pose_ = false;
+        return false;
+    }
+
+    // 3. Estimate 3D Pose using the rigid board
+    int markers_used = cv::aruco::estimatePoseBoard(
+        marker_corners, marker_ids, aruco_board_, 
+        camera_matrix_, dist_coeffs_, rvec_, tvec_
+    );
+
+    if (markers_used > 0) {
+        valid_pose_ = true;
+
+        // 4. Derive the Inverse Homography Matrix for finger tap detection
+        // Convert the rotation vector to a 3x3 rotation matrix
+        cv::Mat R;
+        cv::Rodrigues(rvec_, R);
         
-        if (!homography_.empty()) {
-            applyKalmanFilter(homography_);
-            inv_homography_ = homography_.inv();
-            return true;
-        }
+        // H = CameraMatrix * [R_col0 | R_col1 | tvec]
+        cv::Mat r1 = R.col(0);
+        cv::Mat r2 = R.col(1);
+        cv::Mat t = (cv::Mat_<double>(3, 1) << tvec_[0], tvec_[1], tvec_[2]);
+        
+        cv::Mat Rt;
+        std::vector<cv::Mat> cols = {r1, r2, t};
+        cv::hconcat(cols, Rt);
+        
+        cv::Mat homography = camera_matrix_ * Rt;
+        inv_homography_ = homography.inv();
+
+        return true;
     }
 
+    valid_pose_ = false;
     return false;
 }
 
 cv::Point2f KeyboardMap::pixelToPhysical(float px, float py) const {
-    if (homography_.empty()) {
+    if (!valid_pose_ || inv_homography_.empty()) {
         return cv::Point2f(-1.0f, -1.0f);
     }
 
     std::vector<cv::Point2f> src_point = { cv::Point2f(px, py) };
     std::vector<cv::Point2f> dst_point;
     
-    // Apply the 3x3 matrix to shift the pixel into the flat physical 'cm' plane
-    cv::perspectiveTransform(src_point, dst_point, homography_);
-    
+    // Project the camera pixel straight down onto the physical paper map
+    cv::perspectiveTransform(src_point, dst_point, inv_homography_);
     return dst_point[0];
 }
 
 cv::Point2f KeyboardMap::physicalToPixel(float x_cm, float y_cm) const {
-    if (inv_homography_.empty()) {
+    if (!valid_pose_) {
         return cv::Point2f(-1.0f, -1.0f);
     }
 
-    std::vector<cv::Point2f> src_point = { cv::Point2f(x_cm, y_cm) };
-    std::vector<cv::Point2f> dst_point;
+    // Define the physical point in 3D space (Z is 0 because the paper is flat)
+    std::vector<cv::Point3f> object_points = { cv::Point3f(x_cm, y_cm, 0.0f) };
+    std::vector<cv::Point2f> image_points;
     
-    // Apply the inverse 3x3 matrix to shift the physical cm coordinate into pixel space
-    cv::perspectiveTransform(src_point, dst_point, inv_homography_);
-    
-    return dst_point[0];
+    // Use the camera parameters to project the 3D point onto the 2D camera sensor
+    cv::projectPoints(object_points, rvec_, tvec_, camera_matrix_, dist_coeffs_, image_points);
+    return image_points[0];
 }
 
 void KeyboardMap::addRow(float start_x, float y, const std::vector<std::pair<std::string, float>>& row_data) {
@@ -165,9 +165,7 @@ void KeyboardMap::loadUKLayout() {
     keys_.clear();
     markers_.clear();
 
-    // ---------------------------------------------------------
-    // 1. Define Keys (Origin 0,0 is top-left of the first key)
-    // ---------------------------------------------------------
+    // KEYS 
     
     // Row 1: Numbers (Y = 0.0)
     addRow(0.0f, 0.0f, {
@@ -204,11 +202,7 @@ void KeyboardMap::loadUKLayout() {
     }); // Total width: 15u
 
 
-    // ---------------------------------------------------------
-    // 2. Define ArUco Markers
-    // ---------------------------------------------------------
-    // Note: These coordinates estimate their placement based on the image provided.
-    // They are placed outside the 15x5u main key grid.
+    // ArUco Markers
     
     // Top Row (above the keys)
     markers_.push_back({0,  0.0f, -1.0f}); // Above '~' (x=0)
@@ -225,10 +219,29 @@ void KeyboardMap::loadUKLayout() {
     markers_.push_back({7,  4.0f, 5.0f});  // Below left side of Space (x=4)
     markers_.push_back({9,  8.0f, 5.0f});  // Below right side of Space (x=8)
     markers_.push_back({3, 14.0f, 5.0f});  // Below right Ctrl (x=14)
+
+    std::vector<std::vector<cv::Point3f>> obj_points;
+    std::vector<int> ids;
+
+    for (const auto& marker : markers_) {
+        float x = marker.x_u * kBaseUnitCm;
+        float y = marker.y_u * kBaseUnitCm;
+        float size = marker.size_u * kBaseUnitCm;
+
+        // Add 3D coordinates for the 4 corners of this specific marker (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
+        obj_points.push_back({
+            cv::Point3f(x, y, 0.0f),
+            cv::Point3f(x + size, y, 0.0f),
+            cv::Point3f(x + size, y + size, 0.0f),
+            cv::Point3f(x, y + size, 0.0f)
+        });
+        ids.push_back(marker.id);
+    }
+
+    aruco_board_ = cv::aruco::Board::create(obj_points, aruco_dict_, ids);
 }
 
 std::string KeyboardMap::getKeyAt(float x_cm, float y_cm) const {
-    // Simple AABB (Axis-Aligned Bounding Box) collision check
     for (const auto& key : keys_) {
         float kx = key.x_cm();
         float ky = key.y_cm();
@@ -240,7 +253,7 @@ std::string KeyboardMap::getKeyAt(float x_cm, float y_cm) const {
             return key.id;
         }
     }
-    return ""; // No key found
+    return ""; 
 }
 
 } // namespace cv_keyboard
