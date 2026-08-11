@@ -23,9 +23,14 @@ public:
     std::shared_ptr<const std::vector<HandData>> latestHands() const;
     bool isInitialised() const;
 
+    // --- State Toggles ---
     bool showFullSkeleton() const { return show_full_skeleton_; }
     void setShowFullSkeleton(bool show) { show_full_skeleton_ = show; }
     void toggleFullSkeleton() { show_full_skeleton_ = !show_full_skeleton_; }
+
+    bool showHands() const { return show_hands_; }
+    void setShowHands(bool show) { show_hands_ = show; }
+    void toggleHands() { show_hands_ = !show_hands_; }
 
     bool showDebugOverlay() const { return show_debug_overlay_; }
     void setShowDebugOverlay(bool show) { show_debug_overlay_ = show; }
@@ -50,23 +55,25 @@ private:
     void drawDebug(cv::Mat& frame);
 
     KeyboardMap virtual_keyboard_;
+    ClickProcessor click_processor_;
+    
     mutable cv::Mat cached_kb_overlay_;
     mutable cv::Mat cached_kb_mask_;
-    bool show_keyboard_ = false;
 
     std::unique_ptr<HandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
     mutable std::mutex hands_mutex_;
 
-    ClickProcessor click_processor_;
-
     mutable cv::Mat cached_grid_overlay_;
     mutable cv::Mat cached_grid_mask_; 
     mutable cv::Size last_frame_size_;
 
-    bool show_full_skeleton_ = false;
+    bool show_grid_ = false;          // 1: Grid off by default
+    bool show_full_skeleton_ = false; // 2: Full skeleton off by default
+    bool show_hands_ = true;          // 3: Fingertips on by default
+    bool show_keyboard_ = true;       // 4: Keyboard on by default
+    
     bool show_debug_overlay_ = false;
-    bool show_grid_ = true;
 };
 
 } // namespace cv_keyboard

@@ -228,6 +228,9 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
 }
 
 void Mediator::drawHands(cv::Mat& frame) {
+    if (!show_hands_) {
+        return;
+    }
     auto hands = latestHands();
     if (!hands || hands->empty()) {
         return;
