@@ -4,3 +4,4 @@ mediapipe/
 python-calibration/.venv/
 python-calibration/markers/
 python-calibration/calibration_images/
+python-calibration/typing_videos/
