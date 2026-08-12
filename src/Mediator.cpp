@@ -69,6 +69,23 @@ std::shared_ptr<const std::vector<HandData>> Mediator::latestHands() const {
     return latest_hands_;
 }
 
+// Test function to inject cached hand data and re-run the ClickProcessor logic
+void Mediator::injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame) {
+    // 1. We MUST update the ArUco board transform for this frame (ArUco is not stateful, so this is safe)
+    virtual_keyboard_.updateTransform(frame);
+
+    // 2. Inject the cached MediaPipe data bypassing the ML model
+    {
+        std::lock_guard<std::mutex> lock(hands_mutex_);
+        latest_hands_ = cached_hands;
+    }
+
+    // 3. Re-run the ClickProcessor logic so we can experiment with it!
+    if (latest_hands_) {
+        click_processor_.process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Overlay rendering
 // ---------------------------------------------------------------------------

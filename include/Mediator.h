@@ -46,6 +46,8 @@ public:
 
     void renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame);
 
+    void injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame);
+
 private:
     void drawGrid(cv::Mat& frame, int step = 100) const;
     void drawVirtualKeyboard(cv::Mat& frame);
