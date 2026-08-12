@@ -12,17 +12,91 @@
 #include "mediapipe/gpu/gpu_buffer.h"
 
 #include <opencv2/imgproc.hpp>
+#include <opencv2/video/tracking.hpp>
 
 #include <iostream>
 #include <mutex>
 #include <string>
 #include <vector>
+#include <array>
 
 namespace cv_keyboard {
 
 static constexpr char kInputStream[] = "input_video";
 static constexpr char kMultiHandLandmarksStream[] = "multi_hand_landmarks";
 static constexpr char kMultiHandednessStream[]   = "multi_handedness";
+
+// ---------------------------------------------------------------------------
+// KALMAN FILTER LOGIC
+// ---------------------------------------------------------------------------
+struct HandSmoother {
+    std::array<cv::KalmanFilter, 21> kfs;
+    bool initialized = false;
+    int frames_unseen = 0;
+
+    void reset() {
+        initialized = false;
+        frames_unseen = 0;
+    }
+
+    void smooth(std::array<Landmark, 21>& landmarks) {
+        if (!initialized) {
+            for (int i = 0; i < 21; ++i) {
+                kfs[i].init(4, 2, 0); // State: [x, y, dx, dy], Measurement: [x, y]
+                
+                // Constant velocity model
+                kfs[i].transitionMatrix = (cv::Mat_<float>(4, 4) <<
+                    1, 0, 1, 0,
+                    0, 1, 0, 1,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1);
+                
+                kfs[i].measurementMatrix = (cv::Mat_<float>(2, 4) <<
+                    1, 0, 0, 0,
+                    0, 1, 0, 0);
+
+                // ==========================================
+                // TUNABLE KALMAN FILTER PARAMETERS
+                // ==========================================
+                
+                // Process Noise (How much we expect the physics to drift)
+                // Smaller value = Slower reaction, but extremely smooth.
+                // Larger value  = Fast reaction to sudden movements, but more jitter.
+                cv::setIdentity(kfs[i].processNoiseCov, cv::Scalar::all(1e-2));
+                
+                // Measurement Noise (How much we trust MediaPipe)
+                // Larger value  = We distrust MediaPipe and rely heavily on our smoothed prediction.
+                // Smaller value = We trust MediaPipe and follow its jitter more closely.
+                cv::setIdentity(kfs[i].measurementNoiseCov, cv::Scalar::all(1e-2));
+                
+                cv::setIdentity(kfs[i].errorCovPost, cv::Scalar::all(1));
+
+                // Snap to the very first measurement to prevent sweeping in from [0,0]
+                kfs[i].statePost.at<float>(0) = landmarks[i].x;
+                kfs[i].statePost.at<float>(1) = landmarks[i].y;
+                kfs[i].statePost.at<float>(2) = 0.0f;
+                kfs[i].statePost.at<float>(3) = 0.0f;
+            }
+            initialized = true;
+        }
+
+        cv::Mat measurement(2, 1, CV_32F);
+        for (int i = 0; i < 21; ++i) {
+            kfs[i].predict();
+
+            measurement.at<float>(0) = landmarks[i].x;
+            measurement.at<float>(1) = landmarks[i].y;
+
+            cv::Mat estimated = kfs[i].correct(measurement);
+            
+            // Overwrite the raw MediaPipe coordinate with the smoothed coordinate
+            landmarks[i].x = estimated.at<float>(0);
+            landmarks[i].y = estimated.at<float>(1);
+        }
+        frames_unseen = 0;
+    }
+};
+
 
 // ---------------------------------------------------------------------------
 // PIMPL: hides MediaPipe types from the header
@@ -34,6 +108,9 @@ struct HandTracker::Impl {
     std::mutex mutex_;
     std::shared_ptr<std::vector<HandData>> cached_hands_ = std::make_shared<std::vector<HandData>>();
     int64_t latest_timestamp_us_ = 0;
+
+    HandSmoother left_smoother_;
+    HandSmoother right_smoother_;
 
     ~Impl() {
         if (initialised_) {
@@ -81,25 +158,12 @@ bool HandTracker::init() {
         return false;
     }
 
-    // Setup GPU resources for the graph
-    // auto gpu_resources = mediapipe::GpuResources::Create();
-    // if (gpu_resources.ok()) {
-    //     // Change kGpuSharedDataService to kGpuService here:
-    //     status = impl_->graph_.SetServiceObject(
-    //         mediapipe::kGpuService, std::move(gpu_resources.value()));
-    //     if (!status.ok()) {
-    //         std::cerr << "[HandTracker] Failed to set GPU service: " << status.message() << "\n";
-    //         return false;
-    //     }
-    // }
-
     // --- Asynchronously observe output streams (Non-blocking) ---
     status = impl_->graph_.ObserveOutputStream(
     kMultiHandLandmarksStream,
     [this](const mediapipe::Packet& packet) -> absl::Status {
         std::lock_guard<std::mutex> lock(impl_->mutex_);
         
-        // Clear cached hands if the packet is empty (no hands detected)
         if (packet.IsEmpty()) {
             impl_->cached_hands_->clear();
             return absl::OkStatus();
@@ -126,7 +190,6 @@ bool HandTracker::init() {
                 (*impl_->cached_hands_)[h].landmarks[i].z = static_cast<float>(src.z());
                 (*impl_->cached_hands_)[h].landmarks[i].confidence = static_cast<float>(src.visibility());
             }
-            // (*impl_->cached_hands_)[h].hand_confidence = 1.0f;
             (*impl_->cached_hands_)[h].timestamp_us = packet_ts;
         }
         return absl::OkStatus();
@@ -168,7 +231,6 @@ bool HandTracker::init() {
         return false;
     }
 
-    // Start the graph.
     status = impl_->graph_.StartRun({});
     if (!status.ok()) {
         std::cerr << "[HandTracker] Graph StartRun failed: "
@@ -212,13 +274,34 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
                   << status.message() << "\n";
     }
 
-    // --- NEW: Block until the graph finishes processing the current frame ---
     impl_->graph_.WaitUntilIdle().IgnoreError();
 
     // Now return the freshly processed hands synchronously
     std::lock_guard<std::mutex> lock(impl_->mutex_);
-    return impl_->cached_hands_;
 
+    bool left_seen = false;
+    bool right_seen = false;
+
+    // Apply the correct Kalman filter based on Handedness
+    for (auto& hand : *impl_->cached_hands_) {
+        if (hand.handedness == 1) { // Left Hand
+            impl_->left_smoother_.smooth(hand.landmarks);
+            left_seen = true;
+        } else if (hand.handedness == 2) { // Right Hand
+            impl_->right_smoother_.smooth(hand.landmarks);
+            right_seen = true;
+        }
+    }
+
+    // Reset smoothers if hands leave the frame for too long
+    if (!left_seen) {
+        if (++impl_->left_smoother_.frames_unseen > 5) impl_->left_smoother_.reset();
+    }
+    if (!right_seen) {
+        if (++impl_->right_smoother_.frames_unseen > 5) impl_->right_smoother_.reset();
+    }
+
+    return impl_->cached_hands_;
 }
 
-}// namespace cv_keyboard
+} // namespace cv_keyboard
