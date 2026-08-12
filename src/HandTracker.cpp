@@ -27,76 +27,116 @@ static constexpr char kMultiHandLandmarksStream[] = "multi_hand_landmarks";
 static constexpr char kMultiHandednessStream[]   = "multi_handedness";
 
 // ---------------------------------------------------------------------------
-// KALMAN FILTER LOGIC
+// KALMAN FILTER + OPTICAL FLOW FUSION LOGIC (Option A)
 // ---------------------------------------------------------------------------
 struct HandSmoother {
     std::array<cv::KalmanFilter, 21> kfs;
+    std::vector<cv::Point2f> prev_pts; // Stores physical pixel locations for LK Flow
     bool initialized = false;
     int frames_unseen = 0;
 
     void reset() {
         initialized = false;
         frames_unseen = 0;
+        prev_pts.clear();
     }
 
-    void smooth(std::array<Landmark, 21>& landmarks) {
+    void smooth(std::array<Landmark, 21>& landmarks, const cv::Mat& prev_gray, const cv::Mat& curr_gray) {
+        float width = static_cast<float>(curr_gray.cols);
+        float height = static_cast<float>(curr_gray.rows);
+
         if (!initialized) {
+            prev_pts.resize(21);
             for (int i = 0; i < 21; ++i) {
-                kfs[i].init(4, 2, 0); // State: [x, y, dx, dy], Measurement: [x, y]
+                // State: [x, y, dx, dy], Measurement: [x_mp, y_mp, dx_of, dy_of]
+                kfs[i].init(4, 4, 0); 
                 
-                // Constant velocity model
+                // Kinematic Model: P_new = P_old + V_old
                 kfs[i].transitionMatrix = (cv::Mat_<float>(4, 4) <<
                     1, 0, 1, 0,
                     0, 1, 0, 1,
                     0, 0, 1, 0,
                     0, 0, 0, 1);
                 
-                kfs[i].measurementMatrix = (cv::Mat_<float>(2, 4) <<
-                    1, 0, 0, 0,
-                    0, 1, 0, 0);
+                // H Matrix: We are directly measuring all 4 state variables now
+                cv::setIdentity(kfs[i].measurementMatrix);
 
-                // ==========================================
-                // TUNABLE KALMAN FILTER PARAMETERS
-                // ==========================================
+                // Process Noise: How much we expect the actual physics to deviate from pure constant velocity
+                cv::setIdentity(kfs[i].processNoiseCov, cv::Scalar::all(1e-5));
                 
-                // Process Noise (How much we expect the physics to drift)
-                // Smaller value = Slower reaction, but extremely smooth.
-                // Larger value  = Fast reaction to sudden movements, but more jitter.
-                cv::setIdentity(kfs[i].processNoiseCov, cv::Scalar::all(1e-2));
-                
-                // Measurement Noise (How much we trust MediaPipe)
-                // Larger value  = We distrust MediaPipe and rely heavily on our smoothed prediction.
-                // Smaller value = We trust MediaPipe and follow its jitter more closely.
-                cv::setIdentity(kfs[i].measurementNoiseCov, cv::Scalar::all(1e-2));
+                // ==========================================
+                // FUSION TUNING: R Matrix
+                // ==========================================
+                // We trust MediaPipe for general position, but it is noisy (1e-3).
+                // We trust Optical Flow heavily for short-term velocity (1e-4).
+                kfs[i].measurementNoiseCov = (cv::Mat_<float>(4, 4) <<
+                    1e-5, 0, 0, 0,     // MediaPipe X Noise
+                    0, 1e-5, 0, 0,     // MediaPipe Y Noise
+                    0, 0, 1e-4, 0,     // Optical Flow dX Noise
+                    0, 0, 0, 1e-4);    // Optical Flow dY Noise
                 
                 cv::setIdentity(kfs[i].errorCovPost, cv::Scalar::all(1));
 
-                // Snap to the very first measurement to prevent sweeping in from [0,0]
+                // Snap to initial MediaPipe coordinates
                 kfs[i].statePost.at<float>(0) = landmarks[i].x;
                 kfs[i].statePost.at<float>(1) = landmarks[i].y;
                 kfs[i].statePost.at<float>(2) = 0.0f;
                 kfs[i].statePost.at<float>(3) = 0.0f;
+
+                // Save pixel coordinate for LK flow next frame
+                prev_pts[i] = cv::Point2f(landmarks[i].x * width, landmarks[i].y * height);
             }
             initialized = true;
+            return; // Exit early, no optical flow possible on frame 1
         }
 
-        cv::Mat measurement(2, 1, CV_32F);
+        // 1. Calculate Sparse Optical Flow (Lucas-Kanade)
+        std::vector<cv::Point2f> curr_pts;
+        std::vector<uchar> status;
+        std::vector<float> err;
+        
+        // 21x21 window, 3 pyramid levels to handle fast typing blur
+        cv::calcOpticalFlowPyrLK(prev_gray, curr_gray, prev_pts, curr_pts, status, err, cv::Size(21, 21), 3);
+
+        cv::Mat measurement(4, 1, CV_32F);
+        
         for (int i = 0; i < 21; ++i) {
             kfs[i].predict();
 
+            float vx_of = 0.0f;
+            float vy_of = 0.0f;
+
+            // 2. Extract Velocity from Optical Flow
+            if (status[i]) {
+                // Convert pixel displacement back to normalized [0,1] velocity
+                vx_of = (curr_pts[i].x - prev_pts[i].x) / width;
+                vy_of = (curr_pts[i].y - prev_pts[i].y) / height;
+            } else {
+                // Fallback: If OF lost the feature due to extreme blur, use the KF's internal prediction
+                vx_of = kfs[i].statePre.at<float>(2);
+                vy_of = kfs[i].statePre.at<float>(3);
+            }
+
+            // 3. Assemble the Hybrid Measurement Vector [MP_x, MP_y, OF_vx, OF_vy]
             measurement.at<float>(0) = landmarks[i].x;
             measurement.at<float>(1) = landmarks[i].y;
+            measurement.at<float>(2) = vx_of;
+            measurement.at<float>(3) = vy_of;
 
+            // 4. Correct the state
             cv::Mat estimated = kfs[i].correct(measurement);
             
-            // Overwrite the raw MediaPipe coordinate with the smoothed coordinate
+            // 5. Update MediaPipe outputs with fused data
             landmarks[i].x = estimated.at<float>(0);
             landmarks[i].y = estimated.at<float>(1);
+
+            // 6. Anchor the LK Flow's starting point to the newly smoothed KF state
+            // This prevents the Optical Flow tracking window from drifting away over time
+            prev_pts[i] = cv::Point2f(landmarks[i].x * width, landmarks[i].y * height);
         }
         frames_unseen = 0;
     }
 };
-
 
 // ---------------------------------------------------------------------------
 // PIMPL: hides MediaPipe types from the header
@@ -111,6 +151,9 @@ struct HandTracker::Impl {
 
     HandSmoother left_smoother_;
     HandSmoother right_smoother_;
+    
+    // NEW: Grayscale image cache for Optical Flow
+    cv::Mat prev_gray_;
 
     ~Impl() {
         if (initialised_) {
@@ -158,7 +201,6 @@ bool HandTracker::init() {
         return false;
     }
 
-    // --- Asynchronously observe output streams (Non-blocking) ---
     status = impl_->graph_.ObserveOutputStream(
     kMultiHandLandmarksStream,
     [this](const mediapipe::Packet& packet) -> absl::Status {
@@ -257,6 +299,10 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
         return {};
     }
 
+    // 1. Prepare Current Grayscale frame for Optical Flow
+    cv::Mat curr_gray;
+    cv::cvtColor(frame, curr_gray, cv::COLOR_BGR2GRAY);
+
     auto input_frame = std::make_unique<mediapipe::ImageFrame>(
         mediapipe::ImageFormat::SRGBA, frame.cols, frame.rows,
         mediapipe::ImageFrame::kDefaultAlignmentBoundary);
@@ -276,30 +322,36 @@ std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& 
 
     impl_->graph_.WaitUntilIdle().IgnoreError();
 
-    // Now return the freshly processed hands synchronously
     std::lock_guard<std::mutex> lock(impl_->mutex_);
+
+    // 2. Initialise prev_gray_ on the very first frame
+    if (impl_->prev_gray_.empty()) {
+        impl_->prev_gray_ = curr_gray.clone();
+    }
 
     bool left_seen = false;
     bool right_seen = false;
 
-    // Apply the correct Kalman filter based on Handedness
+    // 3. Apply the Fusion Filter
     for (auto& hand : *impl_->cached_hands_) {
         if (hand.handedness == 1) { // Left Hand
-            impl_->left_smoother_.smooth(hand.landmarks);
+            impl_->left_smoother_.smooth(hand.landmarks, impl_->prev_gray_, curr_gray);
             left_seen = true;
         } else if (hand.handedness == 2) { // Right Hand
-            impl_->right_smoother_.smooth(hand.landmarks);
+            impl_->right_smoother_.smooth(hand.landmarks, impl_->prev_gray_, curr_gray);
             right_seen = true;
         }
     }
 
-    // Reset smoothers if hands leave the frame for too long
     if (!left_seen) {
         if (++impl_->left_smoother_.frames_unseen > 5) impl_->left_smoother_.reset();
     }
     if (!right_seen) {
         if (++impl_->right_smoother_.frames_unseen > 5) impl_->right_smoother_.reset();
     }
+
+    // 4. Cache current grayscale frame for the next iteration
+    impl_->prev_gray_ = curr_gray.clone();
 
     return impl_->cached_hands_;
 }
