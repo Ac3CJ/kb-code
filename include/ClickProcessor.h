@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include "HandTracker.h"
+#include "IHandTracker.h"
 #include "KeyboardMap.h"
 
 namespace cv_keyboard {

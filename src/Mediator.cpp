@@ -1,4 +1,6 @@
 #include "Mediator.h"
+#include "MediaPipeTracker.h"
+// #include "YoloTracker.h"
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
@@ -30,7 +32,7 @@ static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
 Mediator::Mediator()
-    : hand_tracker_(std::make_unique<HandTracker>()) {}
+    : hand_tracker_(std::make_unique<MediaPipeTracker>()) {}
 
 Mediator::~Mediator() = default;
 

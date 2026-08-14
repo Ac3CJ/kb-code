@@ -1,4 +1,4 @@
-#include "HandTracker.h"
+#include "MediaPipeTracker.h"
 
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/image_frame.h"
@@ -141,7 +141,7 @@ struct HandSmoother {
 // ---------------------------------------------------------------------------
 // PIMPL: hides MediaPipe types from the header
 // ---------------------------------------------------------------------------
-struct HandTracker::Impl {
+struct MediaPipeTracker::Impl {
     mediapipe::CalculatorGraph graph_;
     bool initialised_ = false;
 
@@ -167,12 +167,12 @@ struct HandTracker::Impl {
     }
 };
 
-HandTracker::HandTracker()
+MediaPipeTracker::MediaPipeTracker()
     : impl_(std::make_unique<Impl>()) {}
 
-HandTracker::~HandTracker() = default;
+MediaPipeTracker::~MediaPipeTracker() = default;
 
-bool HandTracker::init() {
+bool MediaPipeTracker::init() {
     std::string graph_path = "graphs/hand_landmark_tracker.pbtxt";
     const char* env_path = std::getenv("CVKB_GRAPH_PATH");
     if (env_path && env_path[0] != '\0') {
@@ -285,16 +285,16 @@ bool HandTracker::init() {
     return true;
 }
 
-bool HandTracker::isInitialised() const {
+bool MediaPipeTracker::isInitialised() const {
     return impl_->initialised_;
 }
 
-int64_t HandTracker::latestTimestamp() const {
+int64_t MediaPipeTracker::latestTimestamp() const {
     std::lock_guard<std::mutex> lock(impl_->mutex_);
     return impl_->latest_timestamp_us_;
 }
 
-std::shared_ptr<const std::vector<HandData>> HandTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
+std::shared_ptr<const std::vector<HandData>> MediaPipeTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
     if (!impl_->initialised_) {
         return {};
     }

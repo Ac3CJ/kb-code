@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstdint>
 
-#include "HandTracker.h"
+#include "IHandTracker.h"
 #include "KeyboardMap.h"
 #include "ClickProcessor.h"
 
@@ -62,7 +62,7 @@ private:
     mutable cv::Mat cached_kb_overlay_;
     mutable cv::Mat cached_kb_mask_;
 
-    std::unique_ptr<HandTracker> hand_tracker_;
+    std::unique_ptr<IHandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
     mutable std::mutex hands_mutex_;
 

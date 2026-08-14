@@ -1,5 +1,5 @@
-#ifndef CV_KEYBOARD_HAND_TRACKER_H
-#define CV_KEYBOARD_HAND_TRACKER_H
+#ifndef CV_KEYBOARD_IHAND_TRACKER_H
+#define CV_KEYBOARD_IHAND_TRACKER_H
 
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -11,7 +11,7 @@
 
 namespace cv_keyboard {
 
-/// Single landmark point from MediaPipe hand detection
+/// Single landmark point based on MediaPipe hand detection
 struct Landmark {
     float x = 0.0f;       ///< Normalised x-coordinate [0, 1] in image space
     float y = 0.0f;       ///< Normalised y-coordinate [0, 1] in image space
@@ -21,13 +21,10 @@ struct Landmark {
 
 /// Complete set of 21 landmarks for one detected hand
 struct HandData {
-    /// MediaPipe 21-point hand landmarks (indices 0–20)
     std::array<Landmark, 21> landmarks;
 
-    /// Confidence that a hand was detected in this frame
     float hand_confidence = 0.0f;
 
-    /// Which hand this is (0 = undefined, 1 = left, 2 = right)
     int handedness = 0;
     int64_t timestamp_us = 0;
 
@@ -76,33 +73,17 @@ inline constexpr int HAND_CONNECTIONS[][2] = {
 
 inline constexpr int NUM_HAND_CONNECTIONS = sizeof(HAND_CONNECTIONS) / sizeof(HAND_CONNECTIONS[0]);
 
-/// Wraps MediaPipe hand landmark inference.
-///
-/// Owns the MediaPipe CalculatorGraph for hand tracking. Receives camera frames
-/// and returns detected hand landmark data. This is the only object that
-/// interacts with MediaPipe directly.
-class HandTracker {
+/// Wraps hand landmark inference.
+class IHandTracker {
 public:
-    HandTracker();
-    ~HandTracker();
+    virtual ~IHandTracker() = default;
 
-    /// Initialise the MediaPipe graph and load the hand landmark model.
-    /// Returns true if initialisation succeeded.
-    bool init();
-
-    /// Run MediaPipe hand landmark inference on the given frame.
-    std::shared_ptr<const std::vector<HandData>> detect(const cv::Mat& frame, int64_t timestamp_us);
-
-    int64_t latestTimestamp() const;
-
-    /// Check whether the tracker has been successfully initialised.
-    bool isInitialised() const;
-
-private:
-    struct Impl;
-    std::unique_ptr<Impl> impl_;
+    virtual bool init() = 0;
+    virtual std::shared_ptr<const std::vector<HandData>> detect(const cv::Mat& frame, int64_t timestamp_us) = 0;
+    virtual int64_t latestTimestamp() const = 0;
+    virtual bool isInitialised() const = 0;
 };
 
 } // namespace cv_keyboard
 
-#endif // CV_KEYBOARD_HAND_TRACKER_H
+#endif // CV_KEYBOARD_IHAND_TRACKER_H

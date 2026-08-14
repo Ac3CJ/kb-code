@@ -6,11 +6,12 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 cc_library(
     name = "cv_keyboard_core",
     srcs = [
-        "src/HandTracker.cpp",
+        "src/MediaPipeTracker.cpp",
         "src/Mediator.cpp",
         "src/KeyboardMap.cpp",
         "src/ClickProcessor.cpp",
-        "include/HandTracker.h",
+        "include/MediaPipeTracker.h",
+        "include/IHandTracker.h",
         "include/Mediator.h",
         "include/Settings.h",
         "include/KeyboardMap.h",
