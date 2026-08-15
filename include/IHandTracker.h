@@ -13,10 +13,12 @@ namespace cv_keyboard {
 
 /// Single landmark point based on MediaPipe hand detection
 struct Landmark {
-    float x = 0.0f;       ///< Normalised x-coordinate [0, 1] in image space
-    float y = 0.0f;       ///< Normalised y-coordinate [0, 1] in image space
-    float z = 0.0f;       ///< Relative depth (wrist-relative, not metric)
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
     float confidence = 0.0f;
+    float vx = 0.0f;
+    float vy = 0.0f;
 };
 
 /// Complete set of 21 landmarks for one detected hand

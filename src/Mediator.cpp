@@ -1,13 +1,4 @@
 #include "Mediator.h"
-#include "MediaPipeTracker.h"
-// #include "YoloTracker.h"
-
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-
-#include <iostream>
-#include <iomanip>
-#include <sstream>
 
 namespace cv_keyboard {
 
@@ -32,7 +23,9 @@ static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
 Mediator::Mediator()
-    : hand_tracker_(std::make_unique<MediaPipeTracker>()) {}
+    : hand_tracker_(std::make_unique<MediaPipeTracker>()),
+    //   click_processor_(std::make_unique<ZeroCrossingProcessor>()) {}
+        click_processor_(std::make_unique<InterpolationProcessor>()) {}
 
 Mediator::~Mediator() = default;
 
@@ -62,7 +55,7 @@ void Mediator::processFrame(const cv::Mat& frame) {
     }
 
     if (latest_hands_) {
-        click_processor_.process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+        click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
     }
 }
 
@@ -84,7 +77,15 @@ void Mediator::injectCachedHands(std::shared_ptr<const std::vector<HandData>> ca
 
     // 3. Re-run the ClickProcessor logic so we can experiment with it!
     if (latest_hands_) {
-        click_processor_.process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+        click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+    }
+}
+
+void Mediator::warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>> past_hands, int frame_width, int frame_height) {
+    if (past_hands && click_processor_) {
+        // We evaluate the historical hands against the CURRENT ArUco board transform.
+        // Since T-2 was only 60ms ago, it is mathematically safe to assume the desk hasn't moved.
+        click_processor_->process(*past_hands, virtual_keyboard_, frame_width, frame_height);
     }
 }
 
@@ -196,6 +197,7 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
 
     cv::Scalar border_color(0, 255, 0);         // Green border
     cv::Scalar hover_fill_color(0, 165, 255);   // Orange fill (BGR)
+    cv::Scalar click_fill_color(255, 0, 0);     // Blue fill (BGR)
     cv::Scalar text_color(255, 255, 255);       // White text
 
     for (const auto& key : virtual_keyboard_.getKeys()) {
@@ -219,7 +221,16 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         std::vector<std::vector<cv::Point>> contours = { pts };
 
         // 2. Check if hovered and draw a semi-transparent filled polygon
-        if (click_processor_.isHovered(key.id)) {
+        if (click_processor_->isClicked(key.id)) {
+            cv::Mat overlay;
+            frame.copyTo(overlay);
+            
+            // Fill the polygon on the duplicate frame
+            cv::fillPoly(overlay, contours, click_fill_color);
+            
+            // Blend the overlay back into the original frame (50% opacity)
+            cv::addWeighted(overlay, 0.5, frame, 0.5, 0, frame);
+        } else if (click_processor_->isHovered(key.id)) {
             cv::Mat overlay;
             frame.copyTo(overlay);
             

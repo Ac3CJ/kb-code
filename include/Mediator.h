@@ -2,14 +2,24 @@
 #define CV_KEYBOARD_MEDIATOR_H
 
 #include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+
 #include <memory>
 #include <mutex>
 #include <vector>
 #include <cstdint>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
-#include "IHandTracker.h"
 #include "KeyboardMap.h"
-#include "ClickProcessor.h"
+
+#include "MediaPipeTracker.h"
+// #include "YoloTracker.h"
+
+#include "ZeroCrossingProcessor.h"
+#include "InterpolationProcessor.h"
 
 namespace cv_keyboard {
 
@@ -48,6 +58,9 @@ public:
 
     void injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame);
 
+    void resetClickState() {if (click_processor_) click_processor_->reset();}
+    void warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>> past_hands, int frame_width, int frame_height);
+
 private:
     void drawGrid(cv::Mat& frame, int step = 100) const;
     void drawVirtualKeyboard(cv::Mat& frame);
@@ -57,7 +70,7 @@ private:
     void drawDebug(cv::Mat& frame);
 
     KeyboardMap virtual_keyboard_;
-    ClickProcessor click_processor_;
+    std::unique_ptr<IClickProcessor> click_processor_;
     
     mutable cv::Mat cached_kb_overlay_;
     mutable cv::Mat cached_kb_mask_;

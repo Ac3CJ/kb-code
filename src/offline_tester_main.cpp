@@ -78,7 +78,6 @@ public:
                     // NEW FRAME: Run the heavy MediaPipe graph
                     mediator_.processFrame(raw_frame);
                     
-                    // --- NEW: Deep Copy the data ---
                     auto latest = mediator_.latestHands();
                     if (latest) {
                         // Create a brand new shared_ptr containing a physical copy of the vector
@@ -135,6 +134,20 @@ public:
                     current_frame_idx--;
                     cap.set(cv::CAP_PROP_POS_FRAMES, current_frame_idx);
                     cap.read(raw_frame);
+                    
+                    // Flush the corrupted forward-moving history
+                    mediator_.resetClickState(); 
+                    
+                    // Pre-Roll T-2
+                    if (hand_cache_.count(current_frame_idx - 2)) {
+                        mediator_.warmUpClickProcessor(hand_cache_[current_frame_idx - 2], raw_frame.cols, raw_frame.rows);
+                    }
+                    
+                    // Pre-Roll T-1
+                    if (hand_cache_.count(current_frame_idx - 1)) {
+                        mediator_.warmUpClickProcessor(hand_cache_[current_frame_idx - 1], raw_frame.cols, raw_frame.rows);
+                    }
+                    
                     force_process = true;
                 }
             } else if (key == 'r' || key == 'R') {

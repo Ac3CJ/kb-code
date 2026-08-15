@@ -129,6 +129,8 @@ struct HandSmoother {
             // 5. Update MediaPipe outputs with fused data
             landmarks[i].x = estimated.at<float>(0);
             landmarks[i].y = estimated.at<float>(1);
+            landmarks[i].vx = measurement.at<float>(2);
+            landmarks[i].vy = measurement.at<float>(3);
 
             // 6. Anchor the LK Flow's starting point to the newly smoothed KF state
             // This prevents the Optical Flow tracking window from drifting away over time
