@@ -189,10 +189,11 @@ void Application::handleKeyInput(int key) {
         }
     } else if (key == 'd' || key == 'D') {
         if (mediator_) {
-            mediator_->toggleDebugOverlay();
-            std::cout << "[Application] Debug overlay: "
-                      << (mediator_->showDebugOverlay() ? "ON" : "OFF")
-                      << "\n";
+            mediator_->cycleDebugMode();
+            std::cout << "[Application] Debug mode: ";
+            if (mediator_->debugMode() == DebugMode::OFF) std::cout << "OFF\n";
+            else if (mediator_->debugMode() == DebugMode::POSE) std::cout << "POSE\n";
+            else std::cout << "PERFORMANCE\n";
         }
     } else if (key == 'k' || key == 'K') {
         if (mediator_) {

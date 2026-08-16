@@ -44,19 +44,31 @@ bool Mediator::isInitialised() const {
 }
 
 void Mediator::processFrame(const cv::Mat& frame) {
+    int64_t t0 = cv::getTickCount();
     virtual_keyboard_.updateTransform(frame);
+
+    int64_t t1 = cv::getTickCount();
+    metrics_.homography_ms = (t1 - t0) * 1000.0 / cv::getTickFrequency();
 
     int64_t ts_us = static_cast<int64_t>(cv::getTickCount() * 1e6 / cv::getTickFrequency());
     auto hands = hand_tracker_->detect(frame, ts_us);
+
+    metrics_.mp_tracker_ms = hand_tracker_->getTrackerTimeMs();
+    metrics_.sensor_fusion_ms = hand_tracker_->getFusionTimeMs();
     
     {
         std::lock_guard<std::mutex> lock(hands_mutex_);
         latest_hands_ = std::move(hands);
     }
 
+    int64_t t2 = cv::getTickCount();
     if (latest_hands_) {
         click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
     }
+
+    int64_t t3 = cv::getTickCount();
+    metrics_.click_process_ms = (t3 - t2) * 1000.0 / cv::getTickFrequency();
+    metrics_.total_ms = (t3 - t0) * 1000.0 / cv::getTickFrequency();
 }
 
 std::shared_ptr<const std::vector<HandData>> Mediator::latestHands() const {
@@ -319,7 +331,7 @@ void Mediator::drawHands(cv::Mat& frame) {
         }
 
         // --- Debug overlay ---
-        if (show_debug_overlay_) {
+        if (debug_mode_ == DebugMode::POSE) {
             int text_x = 10;
             int text_y = 80 + static_cast<int>(h) * 140;
 
@@ -358,19 +370,28 @@ void Mediator::drawHands(cv::Mat& frame) {
     }
 }
 
+void Mediator::drawPerfMetrics(cv::Mat& frame) const {
+    int y = 30;
+    auto drawText = [&](const std::string& text) {
+        cv::putText(frame, text, cv::Point(10, y), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 0), 2);
+        y += 30;
+    };
+
+    drawText("--- ABLATION METRICS ---");
+    drawText("Total Time : " + std::to_string(metrics_.total_ms).substr(0, 5) + " ms");
+    drawText("MP Tracker : " + std::to_string(metrics_.mp_tracker_ms).substr(0, 5) + " ms");
+    drawText("Fusion     : " + std::to_string(metrics_.sensor_fusion_ms).substr(0, 5) + " ms");
+    drawText("Homography : " + std::to_string(metrics_.homography_ms).substr(0, 5) + " ms");
+    drawText("Click Math : " + std::to_string(metrics_.click_process_ms).substr(0, 5) + " ms");
+}
+
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
     raw_frame.copyTo(display_frame);
-
-    if (show_grid_) {
-        drawGrid(display_frame, 100);
-    }
-
-    if (show_keyboard_) {
-        // drawVirtualKeyboard(display_frame);
-        drawPhysicalKeyboard(display_frame);
-    }
-
+    if (show_grid_) drawGrid(display_frame, 100);
+    if (show_keyboard_) drawPhysicalKeyboard(display_frame);
     drawHands(display_frame);
+
+    if (debug_mode_ == DebugMode::PERF) drawPerfMetrics(display_frame);
 
 }
 

@@ -23,6 +23,16 @@
 
 namespace cv_keyboard {
 
+struct PerformanceMetrics {
+    double homography_ms = 0.0;
+    double mp_tracker_ms = 0.0;
+    double sensor_fusion_ms = 0.0;
+    double click_process_ms = 0.0;
+    double total_ms = 0.0;
+};
+
+enum class DebugMode { OFF, POSE, PERF };
+
 class Mediator {
 public:
     Mediator();
@@ -42,9 +52,13 @@ public:
     void setShowHands(bool show) { show_hands_ = show; }
     void toggleHands() { show_hands_ = !show_hands_; }
 
-    bool showDebugOverlay() const { return show_debug_overlay_; }
-    void setShowDebugOverlay(bool show) { show_debug_overlay_ = show; }
-    void toggleDebugOverlay() { show_debug_overlay_ = !show_debug_overlay_; }
+    DebugMode debugMode() const { return debug_mode_; }
+    void cycleDebugMode() {
+        if (debug_mode_ == DebugMode::OFF) debug_mode_ = DebugMode::POSE;
+        else if (debug_mode_ == DebugMode::POSE) debug_mode_ = DebugMode::PERF;
+        else debug_mode_ = DebugMode::OFF;
+    }
+    const PerformanceMetrics& getMetrics() const { return metrics_; }
 
     bool showGrid() const { return show_grid_; }
     void setShowGrid(bool show) { show_grid_ = show; }
@@ -88,6 +102,9 @@ private:
     bool show_hands_ = true;          // 3: Fingertips on by default
     bool show_keyboard_ = true;       // 4: Keyboard on by default
     
+    PerformanceMetrics metrics_;
+    DebugMode debug_mode_ = DebugMode::OFF;
+    void drawPerfMetrics(cv::Mat& frame) const;
     bool show_debug_overlay_ = false;
 };
 

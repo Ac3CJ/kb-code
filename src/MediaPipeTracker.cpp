@@ -297,11 +297,11 @@ int64_t MediaPipeTracker::latestTimestamp() const {
 }
 
 std::shared_ptr<const std::vector<HandData>> MediaPipeTracker::detect(const cv::Mat& frame, int64_t timestamp_us) {
-    if (!impl_->initialised_) {
-        return {};
-    }
+    if (!impl_->initialised_) return {};
+    
+    int64_t t_start = cv::getTickCount(); // START ML TRACKER TIMER
 
-    // 1. Prepare Current Grayscale frame for Optical Flow
+    // Prepare Current Grayscale frame for Optical Flow
     cv::Mat curr_gray;
     cv::cvtColor(frame, curr_gray, cv::COLOR_BGR2GRAY);
 
@@ -324,9 +324,12 @@ std::shared_ptr<const std::vector<HandData>> MediaPipeTracker::detect(const cv::
 
     impl_->graph_.WaitUntilIdle().IgnoreError();
 
+    int64_t t_mid = cv::getTickCount(); // END ML TRACKER / START FUSION TIMER
+    tracker_time_ms_ = (t_mid - t_start) * 1000.0 / cv::getTickFrequency();
+
     std::lock_guard<std::mutex> lock(impl_->mutex_);
 
-    // 2. Initialise prev_gray_ on the very first frame
+    // Initialise prev_gray_ on the very first frame
     if (impl_->prev_gray_.empty()) {
         impl_->prev_gray_ = curr_gray.clone();
     }
@@ -334,7 +337,7 @@ std::shared_ptr<const std::vector<HandData>> MediaPipeTracker::detect(const cv::
     bool left_seen = false;
     bool right_seen = false;
 
-    // 3. Apply the Fusion Filter
+    // Apply the Fusion Filter
     for (auto& hand : *impl_->cached_hands_) {
         if (hand.handedness == 1) { // Left Hand
             impl_->left_smoother_.smooth(hand.landmarks, impl_->prev_gray_, curr_gray);
@@ -352,8 +355,11 @@ std::shared_ptr<const std::vector<HandData>> MediaPipeTracker::detect(const cv::
         if (++impl_->right_smoother_.frames_unseen > 5) impl_->right_smoother_.reset();
     }
 
-    // 4. Cache current grayscale frame for the next iteration
+    // Cache current grayscale frame for the next iteration
     impl_->prev_gray_ = curr_gray.clone();
+
+    int64_t t_end = cv::getTickCount(); // END FUSION TIMER
+    fusion_time_ms_ = (t_end - t_mid) * 1000.0 / cv::getTickFrequency();
 
     return impl_->cached_hands_;
 }

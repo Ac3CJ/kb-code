@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <fstream>
 
 #include "Mediator.h"
 
@@ -57,10 +58,54 @@ public:
         current_view_ = full_view_;
 
         bool force_process = true;
+        bool summary_printed = false;
+
+        std::vector<PerformanceMetrics> ablation_history;
 
         while (true) {
             if (!is_paused) {
                 if (!cap.read(raw_frame)) {
+                    if (!summary_printed && !ablation_history.empty()) {
+                        double sum_homo = 0, sum_mp = 0, sum_fusion = 0, sum_click = 0, sum_total = 0;
+                        double max_homo = 0, max_mp = 0, max_fusion = 0, max_click = 0, max_total = 0;
+
+                        for (const auto& m : ablation_history) {
+                            sum_homo += m.homography_ms;
+                            max_homo = std::max(max_homo, m.homography_ms);
+                            
+                            sum_mp += m.mp_tracker_ms;
+                            max_mp = std::max(max_mp, m.mp_tracker_ms);
+                            
+                            sum_fusion += m.sensor_fusion_ms;
+                            max_fusion = std::max(max_fusion, m.sensor_fusion_ms);
+                            
+                            sum_click += m.click_process_ms;
+                            max_click = std::max(max_click, m.click_process_ms);
+                            
+                            sum_total += m.total_ms;
+                            max_total = std::max(max_total, m.total_ms);
+                        }
+
+                        size_t count = ablation_history.size();
+                        std::cout << "\n\n=== ABLATION METRICS SUMMARY (" << count << " frames) ===\n"
+                                  << std::fixed << std::setprecision(2)
+                                  << "--- AVERAGE TIMES ---\n"
+                                  << "  Homography   : " << (sum_homo / count) << " ms\n"
+                                  << "  MP Tracker   : " << (sum_mp / count) << " ms\n"
+                                  << "  Fusion       : " << (sum_fusion / count) << " ms\n"
+                                  << "  Click Math   : " << (sum_click / count) << " ms\n"
+                                  << "  Total        : " << (sum_total / count) << " ms\n"
+                                  << "--- MAXIMUM TIMES ---\n"
+                                  << "  Homography   : " << max_homo << " ms\n"
+                                  << "  MP Tracker   : " << max_mp << " ms\n"
+                                  << "  Fusion       : " << max_fusion << " ms\n"
+                                  << "  Click Math   : " << max_click << " ms\n"
+                                  << "  Total        : " << max_total << " ms\n"
+                                  << "===============================================\n";
+                        
+                        summary_printed = true;
+                    }
+                    
                     std::cout << "[Tester] End of video reached. Pausing.\n";
                     is_paused = true;
                     current_frame_idx--;
@@ -77,6 +122,8 @@ public:
                 if (current_frame_idx > highest_frame_processed) {
                     // NEW FRAME: Run the heavy MediaPipe graph
                     mediator_.processFrame(raw_frame);
+
+                    ablation_history.push_back(mediator_.getMetrics());
                     
                     auto latest = mediator_.latestHands();
                     if (latest) {
@@ -90,6 +137,16 @@ public:
                 } else {
                     // PAST FRAME: Bypass MediaPipe and inject the cached data directly
                     mediator_.injectCachedHands(hand_cache_[current_frame_idx], raw_frame);
+                }
+
+                if (current_frame_idx <= highest_frame_processed) {
+                    const auto& m = mediator_.getMetrics();
+                    std::cout << "\r[Metrics F" << current_frame_idx << "] "
+                              << "MP: " << std::fixed << std::setprecision(2) << m.mp_tracker_ms << "ms | "
+                              << "Fus: " << m.sensor_fusion_ms << "ms | "
+                              << "Homo: " << m.homography_ms << "ms | "
+                              << "Clk: " << m.click_process_ms << "ms        " 
+                              << std::flush;
                 }
 
                 mediator_.renderOverlay(raw_frame, display_frame);
@@ -119,6 +176,19 @@ public:
             int key = cv::waitKey(is_paused ? 30 : 16); 
             
             if (key == 27) { // ESC
+                std::cout << "\n\n[Tester] Video halted. Save Ablation Metrics to CSV? (y/n): ";
+                char ans;
+                std::cin >> ans;
+                if (ans == 'y' || ans == 'Y') {
+                    std::ofstream f("ablation_metrics.csv");
+                    f << "Frame,Homography_ms,MediaPipe_ms,Fusion_ms,ClickMath_ms,Total_ms\n";
+                    for (size_t i = 0; i < ablation_history.size(); ++i) {
+                        const auto& m = ablation_history[i];
+                        f << i << "," << m.homography_ms << "," << m.mp_tracker_ms << "," 
+                          << m.sensor_fusion_ms << "," << m.click_process_ms << "," << m.total_ms << "\n";
+                    }
+                    std::cout << "[Tester] Saved " << ablation_history.size() << " frames to ablation_metrics.csv\n";
+                }
                 break;
             } else if (key == ' ') {
                 is_paused = !is_paused;

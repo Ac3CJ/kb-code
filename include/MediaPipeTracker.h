@@ -15,7 +15,13 @@ public:
     int64_t latestTimestamp() const override; 
     bool isInitialised() const override; 
 
+    double getTrackerTimeMs() const override { return tracker_time_ms_; }
+    double getFusionTimeMs() const override { return fusion_time_ms_; }
+
 private:
+    double tracker_time_ms_ = 0.0;
+    double fusion_time_ms_ = 0.0;
+    
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

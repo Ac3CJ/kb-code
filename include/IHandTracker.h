@@ -84,6 +84,9 @@ public:
     virtual std::shared_ptr<const std::vector<HandData>> detect(const cv::Mat& frame, int64_t timestamp_us) = 0;
     virtual int64_t latestTimestamp() const = 0;
     virtual bool isInitialised() const = 0;
+
+    virtual double getTrackerTimeMs() const = 0;
+    virtual double getFusionTimeMs() const = 0;
 };
 
 } // namespace cv_keyboard
