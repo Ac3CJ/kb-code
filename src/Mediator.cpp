@@ -24,8 +24,8 @@ static constexpr int kFontThickness = 1;
 
 Mediator::Mediator()
     : hand_tracker_(std::make_unique<MediaPipeTracker>()),
-    //   click_processor_(std::make_unique<ZeroCrossingProcessor>()) {}
-        click_processor_(std::make_unique<InterpolationProcessor>()) {}
+      click_processor_(std::make_unique<ZeroCrossingProcessor>()) {}
+    //     click_processor_(std::make_unique<InterpolationProcessor>()) {}
 
 Mediator::~Mediator() = default;
 

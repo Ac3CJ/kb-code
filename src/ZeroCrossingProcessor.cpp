@@ -10,8 +10,8 @@ void ZeroCrossingProcessor::detectClicks(const std::vector<HandData>& hands,
                             
     // TUNABLE PARAMETERS (Normalized pixel velocity per frame)
     // Adjust these to filter out slow hovering movements
-    const float STRIKE_THRESH = 0.000015f; 
-    const float RELEASE_THRESH = 0.000015f;
+    const float STRIKE_THRESH = 0.0015f; 
+    const float RELEASE_THRESH = 0.0015f;
 
     for (const auto& hand : hands) {
         for (int tip_idx : FINGER_TIP_INDICES) {
@@ -34,17 +34,16 @@ void ZeroCrossingProcessor::detectClicks(const std::vector<HandData>& hands,
                 //           << " | v_prev: " << v_prev 
                 //           << " | v_curr: " << v_curr << std::endl;
 
-                // Zero-Crossing Logic: Was it moving down fast, and is now moving up fast?
-                if (v_prev > STRIKE_THRESH && v_curr < -RELEASE_THRESH) {
-                    float px = tip.x * static_cast<float>(frame_width);
-                    float py = tip.y * static_cast<float>(frame_height);
-                    
-                    cv::Point2f pt_cm = keyboard_map.pixelToPhysical(px, py);
-                    std::string key_id = keyboard_map.getKeyAt(pt_cm.x, pt_cm.y);
-                    
-                    if (!key_id.empty()) {
-                        clicked_key_ids_.insert(key_id);
+                // Zero-Crossing Logic
+                if (v_prev > STRIKE_THRESH && v_curr <= STRIKE_THRESH) {
+                    if (finger_hovers_.count(finger_id)) {
+                        active_clicks_[finger_id] = finger_hovers_[finger_id];
                     }
+                }
+                
+                // Detect Lift Phase
+                if (v_curr < -RELEASE_THRESH) {
+                    active_clicks_.erase(finger_id);
                 }
             }
         }

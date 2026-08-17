@@ -24,14 +24,10 @@ void InterpolationProcessor::detectClicks(const std::vector<HandData>& hands,
                 const auto& prev = history[1];
                 const auto& curr = history[2];
 
-                if (prev.vy > NOISE_FLOOR && curr.vy < -NOISE_FLOOR) {
-                    // Linear Interpolation: Find the scalar 't' [0.0, 1.0] where vy crosses 0
+                if (prev.vy > NOISE_FLOOR && curr.vy <= NOISE_FLOOR) {
                     float t = prev.vy / (prev.vy - curr.vy); 
-                    
-                    // Clamp to ensure mathematical safety between the two frames
                     t = std::max(0.0f, std::min(1.0f, t));
 
-                    // Interpolate spatial coordinates to the moment of impact
                     float interp_x = prev.x + t * (curr.x - prev.x);
                     float interp_y = prev.y + t * (curr.y - prev.y);
 
@@ -42,8 +38,13 @@ void InterpolationProcessor::detectClicks(const std::vector<HandData>& hands,
                     std::string key_id = keyboard_map.getKeyAt(pt_cm.x, pt_cm.y);
                     
                     if (!key_id.empty()) {
-                        clicked_key_ids_.insert(key_id);
+                        active_clicks_[finger_id] = key_id;
                     }
+                }
+
+                // Detect Lift Phase
+                if (curr.vy < -NOISE_FLOOR) {
+                    active_clicks_.erase(finger_id);
                 }
             }
         }

@@ -3,6 +3,8 @@
 
 #include "IClickProcessor.h"
 
+#include <map>
+
 namespace cv_keyboard {
 
 class BaseClickProcessor : public IClickProcessor {
@@ -35,6 +37,9 @@ protected:
 
     std::unordered_set<std::string> hovered_key_ids_;
     std::unordered_set<std::string> clicked_key_ids_;
+
+    std::map<int, std::string> finger_hovers_;
+    std::map<int, std::string> active_clicks_;
 };
 
 } // namespace cv_keyboard

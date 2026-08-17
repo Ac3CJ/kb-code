@@ -8,17 +8,18 @@ void BaseClickProcessor::process(const std::vector<HandData>& hands,
                                  const KeyboardMap& keyboard_map, 
                                  int frame_width, 
                                  int frame_height) {
-    // 1. Clear previous frame states[cite: 19]
     hovered_key_ids_.clear();
     clicked_key_ids_.clear();
+    finger_hovers_.clear();
 
     if (!keyboard_map.hasValidTransform() || hands.empty()) {
+        active_clicks_.clear();
         return;
     }
 
-    // 2. Perform shared Hover Logic[cite: 19]
     for (const auto& hand : hands) {
         for (int tip_idx : FINGER_TIP_INDICES) {
+            int finger_id = (hand.handedness << 8) | tip_idx;
             const auto& tip = hand.landmarks[tip_idx];
 
             float px = tip.x * static_cast<float>(frame_width);
@@ -29,17 +30,38 @@ void BaseClickProcessor::process(const std::vector<HandData>& hands,
 
             if (!key_id.empty()) {
                 hovered_key_ids_.insert(key_id);
+                finger_hovers_[finger_id] = key_id;
             }
         }
     }
 
     // 3. Delegate specific Touch Logic to the Child Class
     detectClicks(hands, keyboard_map, frame_width, frame_height);
+
+    // Debounce
+    for (auto it = active_clicks_.begin(); it != active_clicks_.end(); ) {
+        int finger_id = it->first;
+        std::string pressed_key = it->second;
+
+        // Check if the finger is still hovering over the key it pressed
+        auto hover_it = finger_hovers_.find(finger_id);
+        
+        if (hover_it == finger_hovers_.end() || hover_it->second != pressed_key) {
+            // The finger slid off. Auto-release the click.
+            it = active_clicks_.erase(it);
+        } else {
+            // The finger is still dwelling inside the key. 
+            clicked_key_ids_.insert(pressed_key);
+            ++it;
+        }
+    }
 }
 
 void BaseClickProcessor::reset() {
     hovered_key_ids_.clear();
     clicked_key_ids_.clear();
+    finger_hovers_.clear();
+    active_clicks_.clear();
     resetHistory();
 }
 
