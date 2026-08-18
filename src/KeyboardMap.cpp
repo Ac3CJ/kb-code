@@ -60,31 +60,24 @@ bool KeyboardMap::updateTransform(const cv::Mat& frame) {
         double center_x = frame.cols / 2.0;
         double center_y = frame.rows / 2.0;
         
-        // Dummy
-        // camera_matrix_ = (cv::Mat_<double>(3, 3) << 
-        //     focal_length, 0, center_x,
-        //     0, focal_length, center_y,
-        //     0, 0, 1);
-
-        // First Pass
-        // camera_matrix_ = (cv::Mat_<double>(3, 3) << 
-        //     3401.30496, 0.00000, 2032.81880,
-        //     0.00000, 3403.65091, 1114.93330,
-        //     0.00000, 0.00000, 1.00000);
-
+        // Honor Magic 6 Pro
         camera_matrix_ = (cv::Mat_<double>(3, 3) << 
             1419.58704, 0.00000, 958.93454,
             0.00000, 1420.44749, 537.41207,
             0.00000, 0.00000, 1.00000);
-        
-        // dist_coeffs_ = cv::Mat::zeros(5, 1, CV_64F); // Assume no lens distortion for now
-
-        // First Pass
-        // dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
-        //     0.37974, -2.23392, -0.00405, -0.00154, 3.27364);
 
         dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
             0.38305, -2.50514, 0.00176, 0.00058, 4.69315);
+
+
+        // Laptop Webcam
+        camera_matrix_ = (cv::Mat_<double>(3, 3) << 
+            626.07198, 0.00000, 312.19162,
+            0.00000, 624.80842, 212.17207,
+            0.00000, 0.00000, 1.00000);
+
+        dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
+            -0.11006, 0.61957, -0.01141, -0.00822, -0.94693);
     }
 
     std::vector<int> marker_ids;

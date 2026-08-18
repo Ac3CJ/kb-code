@@ -94,11 +94,6 @@ void Application::run() {
     }
 }
 
-// cv::Mat Application::currentFrame() const {
-//     std::lock_guard<std::mutex> lock(frame_mutex_);
-//     return frame_.clone();
-// }
-
 void Application::setCameraSource(CameraSource source) {
     if (settings_.active_source == source && capture_.isOpened()) {
         return;

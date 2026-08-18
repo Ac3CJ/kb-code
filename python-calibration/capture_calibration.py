@@ -5,7 +5,7 @@ import os
 os.makedirs("calibration_images", exist_ok=True)
 
 # Open the scrcpy v4l2 sink
-cap = cv2.VideoCapture(10)
+cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("Error: Could not open /dev/video10. Is scrcpy running?")

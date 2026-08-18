@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "Settings.h"
 #include "KeyboardMap.h"
 
 #include "MediaPipeTracker.h"

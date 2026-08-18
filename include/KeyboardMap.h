@@ -1,6 +1,8 @@
 #ifndef CV_KEYBOARD_KEYBOARD_MAP_H
 #define CV_KEYBOARD_KEYBOARD_MAP_H
 
+#include "Settings.h"
+
 #include <string>
 #include <vector>
 #include <unordered_map>
