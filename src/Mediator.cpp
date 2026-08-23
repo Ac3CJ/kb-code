@@ -24,7 +24,7 @@ static constexpr int kFontThickness = 1;
 
 Mediator::Mediator()
     :   hand_tracker_(std::make_unique<RTMPoseTracker>()),
-        // hand_tracker_(std::make_unique<MediaPipeTracker>()),
+        //hand_tracker_(std::make_unique<MediaPipeTracker>()),
         click_processor_(std::make_unique<ZeroCrossingProcessor>()) {}
     //     click_processor_(std::make_unique<InterpolationProcessor>()) {}
 
@@ -346,6 +346,9 @@ void Mediator::drawHands(cv::Mat& frame) {
                 int idx = FINGER_TIP_INDICES[i];
                 int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
+                int pvx = static_cast<int>(hand.landmarks[idx].vx * frame_w);
+                int pvy = static_cast<int>(hand.landmarks[idx].vy * frame_h);
+                
 
                 float conf = hand.hand_confidence;
 
@@ -362,7 +365,8 @@ void Mediator::drawHands(cv::Mat& frame) {
                             cv::FONT_HERSHEY_SIMPLEX, kFontScale,
                             kColorDebugText, kFontThickness);
 
-                std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
+                std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + "), (" 
+                    + std::to_string(pvx) + "," + std::to_string(pvy) + ")";
             
                 cv::putText(frame, coord_text, cv::Point(px + 10, py - 10),
                             cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);

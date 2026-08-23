@@ -224,8 +224,15 @@ std::shared_ptr<const std::vector<HandData>> RTMPoseTracker::detect(const cv::Ma
                 float global_x = crop_box.x + (local_x / POSE_W) * crop_box.width;
                 float global_y = crop_box.y + (local_y / POSE_H) * crop_box.height;
 
+                float prev_x = hand_data.landmarks[k].x ;
+                float prev_y = hand_data.landmarks[k].y;
+
                 hand_data.landmarks[k].x = global_x / static_cast<float>(frame.cols);
                 hand_data.landmarks[k].y = global_y / static_cast<float>(frame.rows);
+
+                hand_data.landmarks[k].vx = hand_data.landmarks[k].x - prev_x;
+                hand_data.landmarks[k].vy = hand_data.landmarks[k].y - prev_y;
+
                 hand_data.landmarks[k].confidence = (x_ptr[max_idx_x] + y_ptr[max_idx_y]) / 2.0f;
             }
         } else {
@@ -241,8 +248,15 @@ std::shared_ptr<const std::vector<HandData>> RTMPoseTracker::detect(const cv::Ma
                 float global_x = crop_box.x + (local_x / POSE_W) * crop_box.width;
                 float global_y = crop_box.y + (local_y / POSE_H) * crop_box.height;
 
+                float prev_x = hand_data.landmarks[k].x;
+                float prev_y = hand_data.landmarks[k].y;
+
                 hand_data.landmarks[k].x = global_x / static_cast<float>(frame.cols);
                 hand_data.landmarks[k].y = global_y / static_cast<float>(frame.rows);
+
+                hand_data.landmarks[k].vx = hand_data.landmarks[k].x - prev_x;
+                hand_data.landmarks[k].vy = hand_data.landmarks[k].y - prev_y;
+
                 hand_data.landmarks[k].confidence = (step > 2) ? kpts[k * step + 2] : 1.0f;
             }
         }

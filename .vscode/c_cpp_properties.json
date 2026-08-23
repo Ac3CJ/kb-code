@@ -3,17 +3,24 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
                 "/usr/include/opencv4",
-                "${workspaceFolder}/bazel-bin",
-                "${workspaceFolder}/bazel-kb-code/external",
                 "${workspaceFolder}/third_party/onnxruntime/include"
             ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "/usr/include/opencv4"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-clang-x64"
         }
     ],
     "version": 4

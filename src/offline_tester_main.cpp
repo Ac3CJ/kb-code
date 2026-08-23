@@ -48,6 +48,7 @@ public:
         std::cout << "  A     : Step Backward (1 Frame)\n";
         std::cout << "  R     : Reset Zoom\n";
         std::cout << "  1-4   : Toggle Visuals (Grid, Skeleton, Hands, Keyboard)\n";
+        std::cout << "  6     : Cycle Debug Mode (Off / Pose / Perf)\n";
         std::cout << "  ESC   : Quit\n";
         std::cout << "Mouse:\n";
         std::cout << "  Left Click + Drag : Draw box to zoom in\n";
@@ -233,6 +234,13 @@ public:
                 force_process = true;
             } else if (key == '4') {
                 mediator_.toggleKeyboard();
+                force_process = true;
+            } else if (key == '6') {
+                mediator_.cycleDebugMode();
+                std::cout << "[Tester] Debug mode: ";
+                if (mediator_.debugMode() == DebugMode::OFF) std::cout << "OFF\n";
+                else if (mediator_.debugMode() == DebugMode::POSE) std::cout << "POSE\n";
+                else std::cout << "PERF\n";
                 force_process = true;
             }
         }

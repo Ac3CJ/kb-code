@@ -3,17 +3,32 @@
         "**/bazel-*": true
     },
     "search.exclude": {
-        "**/bazel-*": true
+        "**/bazel-*": true,
+        "**/third_party/**": true
     },
     "C_Cpp.files.exclude": [
-        "**/bazel-*"
+        "**/bazel-*",
+        "**/third_party/**"
     ],
     "files.watcherExclude": {
         "**/bazel-*/**": true,
         "**/third_party/**": true
     },
+    
     "C_Cpp.workspaceParsingPriority": "low",
-    "C_Cpp.intelliSenseMemoryLimit": 2048,
-    "C_Cpp.intelliSenseCacheSize": 2048,
-    "C_Cpp.maxConcurrentThreads": 2
+    "C_Cpp.intelliSenseMemoryLimit": 1024,
+    "C_Cpp.intelliSenseCacheSize": 256,
+    "C_Cpp.maxConcurrentThreads": 1,
+    "C_Cpp.intelliSenseUpdateDelay": 1000,
+    
+    "C_Cpp.autocomplete": "default",
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.loggingLevel": "Information",
+    "C_Cpp.updateChannel": "default",
+    
+    "C_Cpp.clang_format_path": "",
+    "C_Cpp.addWorkspaceToIncludePath": false,
+    
+    "C_Cpp.suggestSnippets": true,
+    "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

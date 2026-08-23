@@ -5,3 +5,5 @@ python-calibration/.venv/
 python-calibration/markers/
 python-calibration/calibration_images/
 python-calibration/typing_videos/
+third_party/onnxruntime/lib/*.so
+third_party/onnxruntime/lib/*.so.*
