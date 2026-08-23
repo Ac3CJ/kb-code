@@ -13,6 +13,7 @@ cc_library(
         "src/InterpolationProcessor.cpp",
         "src/BaseClickProcessor.cpp",
         "src/RTMPoseTracker.cpp",
+        "src/HandSmoother.cpp",
 
         "include/MediaPipeTracker.h",
         "include/IHandTracker.h",
@@ -24,6 +25,7 @@ cc_library(
         "include/InterpolationProcessor.h",
         "include/BaseClickProcessor.h",
         "include/RTMPoseTracker.h",
+        "include/HandSmoother.h",
     ],
     includes = ["include"],
     linkopts = [

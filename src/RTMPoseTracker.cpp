@@ -1,7 +1,4 @@
 #include "RTMPoseTracker.h"
-#include <opencv2/imgproc.hpp>
-#include <iostream>
-#include <algorithm>
 
 namespace cv_keyboard {
 
@@ -103,6 +100,10 @@ std::shared_ptr<const std::vector<HandData>> RTMPoseTracker::detect(const cv::Ma
     int64_t t_start = cv::getTickCount();
     latest_timestamp_us_ = timestamp_us;
     std::vector<HandData> current_hands;
+
+    cv::Mat curr_gray;
+    cv::cvtColor(frame, curr_gray, cv::COLOR_BGR2GRAY);
+    if (prev_gray_.empty()) prev_gray_ = curr_gray.clone();
 
     // ==========================================
     // STAGE 1: RTMDet (Hand Bounding Box)
@@ -224,14 +225,8 @@ std::shared_ptr<const std::vector<HandData>> RTMPoseTracker::detect(const cv::Ma
                 float global_x = crop_box.x + (local_x / POSE_W) * crop_box.width;
                 float global_y = crop_box.y + (local_y / POSE_H) * crop_box.height;
 
-                float prev_x = hand_data.landmarks[k].x ;
-                float prev_y = hand_data.landmarks[k].y;
-
                 hand_data.landmarks[k].x = global_x / static_cast<float>(frame.cols);
                 hand_data.landmarks[k].y = global_y / static_cast<float>(frame.rows);
-
-                hand_data.landmarks[k].vx = hand_data.landmarks[k].x - prev_x;
-                hand_data.landmarks[k].vy = hand_data.landmarks[k].y - prev_y;
 
                 hand_data.landmarks[k].confidence = (x_ptr[max_idx_x] + y_ptr[max_idx_y]) / 2.0f;
             }
@@ -248,20 +243,47 @@ std::shared_ptr<const std::vector<HandData>> RTMPoseTracker::detect(const cv::Ma
                 float global_x = crop_box.x + (local_x / POSE_W) * crop_box.width;
                 float global_y = crop_box.y + (local_y / POSE_H) * crop_box.height;
 
-                float prev_x = hand_data.landmarks[k].x;
-                float prev_y = hand_data.landmarks[k].y;
-
                 hand_data.landmarks[k].x = global_x / static_cast<float>(frame.cols);
                 hand_data.landmarks[k].y = global_y / static_cast<float>(frame.rows);
-
-                hand_data.landmarks[k].vx = hand_data.landmarks[k].x - prev_x;
-                hand_data.landmarks[k].vy = hand_data.landmarks[k].y - prev_y;
 
                 hand_data.landmarks[k].confidence = (step > 2) ? kpts[k * step + 2] : 1.0f;
             }
         }
         current_hands.push_back(hand_data);
     }
+
+    // Smoothing and Handedness Determination
+    if (current_hands.size() == 2) {
+        if (current_hands[0].landmarks[0].x < current_hands[1].landmarks[0].x) {
+            current_hands[0].handedness = 1; // Left
+            current_hands[1].handedness = 2; // Right
+        } else {
+            current_hands[0].handedness = 2;
+            current_hands[1].handedness = 1;
+        }
+    } else if (current_hands.size() == 1) {
+        // Fallback heuristic: > 0.5 is right hand, else left
+        current_hands[0].handedness = (current_hands[0].landmarks[0].x > 0.5f) ? 2 : 1; 
+    }
+
+    // Apply the Fusion Filter
+    bool left_seen = false;
+    bool right_seen = false;
+
+    for (auto& hand : current_hands) {
+        if (hand.handedness == 1) {
+            left_smoother_.smooth(hand.landmarks, prev_gray_, curr_gray);
+            left_seen = true;
+        } else if (hand.handedness == 2) {
+            right_smoother_.smooth(hand.landmarks, prev_gray_, curr_gray);
+            right_seen = true;
+        }
+    }
+
+    if (!left_seen && ++left_smoother_.frames_unseen > 5) left_smoother_.reset();
+    if (!right_seen && ++right_smoother_.frames_unseen > 5) right_smoother_.reset();
+
+    prev_gray_ = curr_gray.clone();
 
     std::lock_guard<std::mutex> lock(mutex_);
     *cached_hands_ = current_hands;

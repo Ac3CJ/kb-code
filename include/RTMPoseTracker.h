@@ -2,11 +2,16 @@
 #define CV_KEYBOARD_RTMPOSE_TRACKER_H
 
 #include "IHandTracker.h"
+#include "HandSmoother.h"
+
 #include <onnxruntime_cxx_api.h>
 #include <mutex>
 #include <string>
 #include <vector>
 #include <memory>
+#include <opencv2/imgproc.hpp>
+#include <iostream>
+#include <algorithm>
 
 namespace cv_keyboard {
 
@@ -64,6 +69,11 @@ private:
 
     cv::Rect getExpandedBox(const cv::Rect& box, int frame_cols, int frame_rows, float scale = 1.25f);
     void matToNCHW(const cv::Mat& src, std::vector<float>& dst, bool to_rgb, const cv::Scalar& mean, const cv::Scalar& std_dev);
+
+    // pos noise = 1e-6f, vel_noise = 1e-4f for RTMPoseTracker as it is more stable than MediaPipe
+    HandSmoother left_smoother_{1e-6f, 1e-4f};
+    HandSmoother right_smoother_{1e-6f, 1e-4f};
+    cv::Mat prev_gray_;
 };
 
 } // namespace cv_keyboard
