@@ -52,6 +52,8 @@ void Application::run() {
     // Its internal memory buffer will be allocated once and recycled indefinitely.
     cv::Mat display_frame;
 
+    std::cout << "C++ OpenCV Version: " << CV_VERSION << std::endl;
+
     while (running_) {
         cv::Mat raw_frame;
         if (!capture_.read(raw_frame)) {

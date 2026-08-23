@@ -7,9 +7,11 @@ common --experimental_repo_remote_exec
 
 
 # Basic build settings
-build --jobs 128
-build --define='absl=1'  # for gtest
-build --enable_platform_specific_config
+build --jobs 6
+build --local_ram_resources=HOST_RAM*0.5
+build --local_cpu_resources=6
+
+startup --host_jvm_args=-Xmx2g
 
 # Use Clang instead of Ubuntu's default GCC 13
 build --action_env=CC=clang

@@ -3,11 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/include/opencv4/**",
-                "${workspaceFolder}/bazel-bin/**",
-                "${workspaceFolder}/bazel-out/**",
-                "${workspaceFolder}/bazel-kb-code/external/**"
+                "${workspaceFolder}",
+                "/usr/include/opencv4",
+                "${workspaceFolder}/bazel-bin",
+                "${workspaceFolder}/bazel-kb-code/external",
+                "${workspaceFolder}/third_party/onnxruntime/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -12,6 +12,7 @@ cc_library(
         "src/ZeroCrossingProcessor.cpp",
         "src/InterpolationProcessor.cpp",
         "src/BaseClickProcessor.cpp",
+        "src/RTMPoseTracker.cpp",
 
         "include/MediaPipeTracker.h",
         "include/IHandTracker.h",
@@ -22,11 +23,17 @@ cc_library(
         "include/ZeroCrossingProcessor.h",
         "include/InterpolationProcessor.h",
         "include/BaseClickProcessor.h",
+        "include/RTMPoseTracker.h",
     ],
     includes = ["include"],
     linkopts = [
+        "-lopencv_core",
+        "-lopencv_imgproc",
+        "-lopencv_highgui",
+        "-lopencv_video",
         "-lopencv_aruco",
         "-lopencv_calib3d",
+        "-lopencv_dnn",
     ],
     data = [
         "//graphs:hand_landmark_tracker.pbtxt",
@@ -48,6 +55,7 @@ cc_library(
         "@mediapipe//mediapipe/gpu:gpu_buffer",
         "//graphs:hand_landmark_tracker",
         "@mediapipe//third_party:opencv",
+        "//third_party/onnxruntime:onnxruntime",
     ],
 )
 
@@ -65,6 +73,15 @@ cc_binary(
     deps = [
         ":cv_keyboard_core",
     ],
+    linkopts = [
+        "-lopencv_core",
+        "-lopencv_imgproc",
+        "-lopencv_highgui",
+        "-lopencv_video",
+        "-lopencv_aruco",
+        "-lopencv_calib3d",
+        "-lopencv_dnn",
+    ],
 )
 
 # ==============================================================================
@@ -78,5 +95,14 @@ cc_binary(
     includes = ["include"],
     deps = [
         ":cv_keyboard_core", 
+    ],
+    linkopts = [
+        "-lopencv_core",
+        "-lopencv_imgproc",
+        "-lopencv_highgui",
+        "-lopencv_video",
+        "-lopencv_aruco",
+        "-lopencv_calib3d",
+        "-lopencv_dnn",
     ],
 )

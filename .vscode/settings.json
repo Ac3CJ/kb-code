@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+        "**/bazel-*": true
+    },
+    "search.exclude": {
+        "**/bazel-*": true
+    },
+    "C_Cpp.files.exclude": [
+        "**/bazel-*"
+    ],
+    "files.watcherExclude": {
+        "**/bazel-*/**": true,
+        "**/third_party/**": true
+    },
+    "C_Cpp.workspaceParsingPriority": "low",
+    "C_Cpp.intelliSenseMemoryLimit": 2048,
+    "C_Cpp.intelliSenseCacheSize": 2048,
+    "C_Cpp.maxConcurrentThreads": 2
+}

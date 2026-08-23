@@ -17,6 +17,7 @@
 #include "KeyboardMap.h"
 
 #include "MediaPipeTracker.h"
+#include "RTMPoseTracker.h"
 // #include "YoloTracker.h"
 
 #include "ZeroCrossingProcessor.h"

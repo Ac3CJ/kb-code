@@ -69,7 +69,6 @@ bool KeyboardMap::updateTransform(const cv::Mat& frame) {
         dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
             0.38305, -2.50514, 0.00176, 0.00058, 4.69315);
 
-
         // Laptop Webcam
         camera_matrix_ = (cv::Mat_<double>(3, 3) << 
             626.07198, 0.00000, 312.19162,
