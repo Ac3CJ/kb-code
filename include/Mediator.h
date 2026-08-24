@@ -37,7 +37,8 @@ enum class DebugMode { OFF, POSE, PERF };
 
 class Mediator {
 public:
-    Mediator();
+    explicit Mediator(const std::string& tracker_type = "rtmpose", 
+                      const std::string& processor_type = "zero_crossing");
     ~Mediator();
 
     bool init();

@@ -23,6 +23,10 @@ struct Settings {
     /// Window name for the debug / overlay display
     std::string window_name = "CV Keyboard";
 
+    /// Ablation testing configurations
+    std::string tracker_name = "rtmpose";
+    std::string processor_name = "zero_crossing";
+
     /// Returns the device path for the currently active source
     std::string activeDevicePath() const {
         return active_source == CameraSource::Laptop

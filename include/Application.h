@@ -15,7 +15,7 @@ namespace cv_keyboard {
 
 class Application {
 public:
-    Application();
+    explicit Application(const Settings& settings = Settings());
     ~Application();
 
     /// Main loop: capture frames until ESC or window close

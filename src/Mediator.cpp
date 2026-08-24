@@ -22,11 +22,23 @@ static constexpr int kConnectionThickness = 2;
 static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
-Mediator::Mediator()
-    :   hand_tracker_(std::make_unique<RTMPoseTracker>()),
-        //hand_tracker_(std::make_unique<MediaPipeTracker>()),
-        click_processor_(std::make_unique<ZeroCrossingProcessor>()) {}
-    //     click_processor_(std::make_unique<InterpolationProcessor>()) {}
+Mediator::Mediator(const std::string& tracker_type, const std::string& processor_type) {
+    // Instantiate Tracker
+    if (tracker_type == "mediapipe") {
+        hand_tracker_ = std::make_unique<MediaPipeTracker>();
+    } else {
+        // Default / RTMPose fallback
+        hand_tracker_ = std::make_unique<RTMPoseTracker>();
+    }
+
+    // Instantiate Processor
+    if (processor_type == "interpolation") {
+        click_processor_ = std::make_unique<InterpolationProcessor>();
+    } else {
+        // Default / ZeroCrossing fallback
+        click_processor_ = std::make_unique<ZeroCrossingProcessor>();
+    }
+}
 
 Mediator::~Mediator() = default;
 

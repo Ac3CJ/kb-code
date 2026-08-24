@@ -7,7 +7,7 @@
 
 namespace cv_keyboard {
 
-Application::Application() {
+Application::Application(const Settings& settings) : settings_(settings) {
     cv::namedWindow(settings_.window_name, cv::WINDOW_NORMAL);
 
     if (!initCamera()) {
@@ -35,7 +35,7 @@ Application::~Application() {
 }
 
 bool Application::initPipeline() {
-    mediator_ = std::make_unique<Mediator>();
+    mediator_ = std::make_unique<Mediator>(settings_.tracker_name, settings_.processor_name);
     if (!mediator_->init()) {
         mediator_.reset();
         return false;
@@ -61,13 +61,6 @@ void Application::run() {
             cv::waitKey(30);
             continue;
         }
-
-        // O(1) header assignment. Bumps OpenCV refcount instead of copying 2MB of pixel data.
-        // If VideoCapture needs to modify raw_frame next frame, OpenCV will automatically detach.
-        // {
-        //     std::lock_guard<std::mutex> lock(frame_mutex_);
-        //     frame_ = raw_frame;
-        // }
 
         // Run the pipeline (HandTracker inference) if available
         if (mediator_) {

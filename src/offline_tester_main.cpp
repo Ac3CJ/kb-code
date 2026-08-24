@@ -12,7 +12,10 @@ namespace cv_keyboard {
 
 class OfflineTester {
 public:
-    OfflineTester(const std::string& video_path) : video_path_(video_path) {
+    OfflineTester(const std::string& video_path, 
+                  const std::string& tracker_name, 
+                  const std::string& processor_name) 
+        : video_path_(video_path), mediator_(tracker_name, processor_name) {
         cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
         cv::setMouseCallback(window_name_, onMouse, this);
     }
@@ -300,12 +303,29 @@ private:
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: ./offline_tester <path_to_video.mp4>\n";
+        std::cerr << "Usage: ./offline_tester <path_to_video.mp4> [--tracker <tracker>] [--processor <processor>]\n";
         return 1;
     }
 
     std::string video_path = argv[1];
-    cv_keyboard::OfflineTester tester(video_path);
+    std::string tracker = "rtmpose";
+    std::string processor = "zero_crossing";
+
+    // Parse command line arguments
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--tracker" && i + 1 < argc) {
+            tracker = argv[++i];
+        } else if (arg == "--processor" && i + 1 < argc) {
+            processor = argv[++i];
+        }
+    }
+
+    std::cout << "CV Keyboard Offline Tester\n";
+    std::cout << "Video: " << video_path << "\n";
+    std::cout << "Tracker: " << tracker << ", Processor: " << processor << "\n";
+    
+    cv_keyboard::OfflineTester tester(video_path, tracker, processor);
     tester.run();
 
     return 0;
