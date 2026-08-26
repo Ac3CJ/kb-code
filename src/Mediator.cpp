@@ -77,6 +77,8 @@ void Mediator::processFrame(const cv::Mat& frame) {
     int64_t t2 = cv::getTickCount();
     if (latest_hands_) {
         click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+
+        typing_engine_.processClicks(click_processor_->getClickedKeys(), hand_tracker_->latestTimestamp());
     }
 
     int64_t t3 = cv::getTickCount();
@@ -366,7 +368,9 @@ void Mediator::drawHands(cv::Mat& frame) {
 
                 std::ostringstream oss;
                 oss << tip_names[i] << " (" << idx << "): ("
-                    << px << ", " << py << ") z="
+                    << px << ", " << py
+                    << std::fixed << std::setprecision(6)
+                    << ") vel= (" << pvx << ", " << pvy << ") z="
                     << std::fixed << std::setprecision(3)
                     << hand.landmarks[idx].z
                     << " conf=" << std::fixed << std::setprecision(2)
@@ -377,8 +381,7 @@ void Mediator::drawHands(cv::Mat& frame) {
                             cv::FONT_HERSHEY_SIMPLEX, kFontScale,
                             kColorDebugText, kFontThickness);
 
-                std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + "), (" 
-                    + std::to_string(pvx) + "," + std::to_string(pvy) + ")";
+                std::string coord_text = "(" + std::to_string(px) + "," + std::to_string(py) + ")";
             
                 cv::putText(frame, coord_text, cv::Point(px + 10, py - 10),
                             cv::FONT_HERSHEY_SIMPLEX, 0.45, kFingerTipColors[i], 1);

@@ -1,5 +1,6 @@
 #include "ZeroCrossingProcessor.h"
 #include <iostream>
+#include <iomanip>
 
 namespace cv_keyboard {
 
@@ -11,7 +12,7 @@ void ZeroCrossingProcessor::detectClicks(const std::vector<HandData>& hands,
     // TUNABLE PARAMETERS (Normalized pixel velocity per frame)
     // Adjust these to filter out slow hovering movements
     const float STRIKE_THRESH = 0.0015f; 
-    const float RELEASE_THRESH = 0.0015f;
+    const float RELEASE_THRESH = 0.0000015f;
 
     for (const auto& hand : hands) {
         for (int tip_idx : FINGER_TIP_INDICES) {
@@ -31,6 +32,7 @@ void ZeroCrossingProcessor::detectClicks(const std::vector<HandData>& hands,
                 float v_curr = history[2];
 
                 // std::cout << "[ZeroCrossingProcessor] Finger ID: " << finger_id 
+                //           << std::setprecision(6)
                 //           << " | v_prev: " << v_prev 
                 //           << " | v_curr: " << v_curr << std::endl;
 

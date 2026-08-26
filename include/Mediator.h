@@ -23,6 +23,8 @@
 #include "ZeroCrossingProcessor.h"
 #include "InterpolationProcessor.h"
 
+#include "TypingEngine.h"
+
 namespace cv_keyboard {
 
 struct PerformanceMetrics {
@@ -75,7 +77,7 @@ public:
 
     void injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame);
 
-    void resetClickState() {if (click_processor_) click_processor_->reset();}
+    void resetClickState() {if (click_processor_) click_processor_->reset(); typing_engine_.reset();}
     void warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>> past_hands, int frame_width, int frame_height);
 
 private:
@@ -95,6 +97,8 @@ private:
     std::unique_ptr<IHandTracker> hand_tracker_;
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
     mutable std::mutex hands_mutex_;
+
+    TypingEngine typing_engine_;
 
     mutable cv::Mat cached_grid_overlay_;
     mutable cv::Mat cached_grid_mask_; 
