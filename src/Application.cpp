@@ -40,6 +40,9 @@ bool Application::initPipeline() {
         mediator_.reset();
         return false;
     }
+
+    mediator_->updateCameraIntrinsics(settings_.active_source);
+
     return true;
 }
 
@@ -102,6 +105,10 @@ void Application::setCameraSource(CameraSource source) {
 
     if (!initCamera()) {
         std::cerr << "[Application] Failed to switch camera source.\n";
+    }
+
+    if (mediator_) {
+        mediator_->updateCameraIntrinsics(settings_.active_source);
     }
 }
 

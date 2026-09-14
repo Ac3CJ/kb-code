@@ -60,6 +60,8 @@ public:
     void setShowHands(bool show) { show_hands_ = show; }
     void toggleHands() { show_hands_ = !show_hands_; }
 
+    void updateCameraIntrinsics(CameraSource source);
+
     DebugMode debugMode() const { return debug_mode_; }
     void cycleDebugMode() {
         if (debug_mode_ == DebugMode::OFF) debug_mode_ = DebugMode::POSE;

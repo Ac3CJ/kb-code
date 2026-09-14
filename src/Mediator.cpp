@@ -116,6 +116,10 @@ void Mediator::warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>>
     }
 }
 
+void Mediator::updateCameraIntrinsics(CameraSource source) {
+    virtual_keyboard_.updateCameraIntrinsics(source);
+}
+
 // ---------------------------------------------------------------------------
 // Overlay rendering
 // ---------------------------------------------------------------------------
