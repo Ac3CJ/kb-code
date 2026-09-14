@@ -180,19 +180,19 @@ public:
             int key = cv::waitKey(is_paused ? 30 : 16); 
             
             if (key == 27) { // ESC
-                std::cout << "\n\n[Tester] Video halted. Save Ablation Metrics to CSV? (y/n): ";
-                char ans;
-                std::cin >> ans;
-                if (ans == 'y' || ans == 'Y') {
-                    std::ofstream f("ablation_metrics.csv");
-                    f << "Frame,Homography_ms,MediaPipe_ms,Fusion_ms,ClickMath_ms,Total_ms\n";
-                    for (size_t i = 0; i < ablation_history.size(); ++i) {
-                        const auto& m = ablation_history[i];
-                        f << i << "," << m.homography_ms << "," << m.mp_tracker_ms << "," 
-                          << m.sensor_fusion_ms << "," << m.click_process_ms << "," << m.total_ms << "\n";
-                    }
-                    std::cout << "[Tester] Saved " << ablation_history.size() << " frames to ablation_metrics.csv\n";
-                }
+                // std::cout << "\n\n[Tester] Video halted. Save Ablation Metrics to CSV? (y/n): ";
+                // char ans;
+                // std::cin >> ans;
+                // if (ans == 'y' || ans == 'Y') {
+                //     std::ofstream f("ablation_metrics.csv");
+                //     f << "Frame,Homography_ms,MediaPipe_ms,Fusion_ms,ClickMath_ms,Total_ms\n";
+                //     for (size_t i = 0; i < ablation_history.size(); ++i) {
+                //         const auto& m = ablation_history[i];
+                //         f << i << "," << m.homography_ms << "," << m.mp_tracker_ms << "," 
+                //           << m.sensor_fusion_ms << "," << m.click_process_ms << "," << m.total_ms << "\n";
+                //     }
+                //     std::cout << "[Tester] Saved " << ablation_history.size() << " frames to ablation_metrics.csv\n";
+                // }
                 break;
             } else if (key == ' ') {
                 is_paused = !is_paused;
@@ -244,6 +244,20 @@ public:
                 if (mediator_.debugMode() == DebugMode::OFF) std::cout << "OFF\n";
                 else if (mediator_.debugMode() == DebugMode::POSE) std::cout << "POSE\n";
                 else std::cout << "PERF\n";
+                force_process = true;
+            } else if (key == '7') {
+                mediator_.cycleFilterMode();
+                std::cout << "[Tester] Filter mode: ";
+                switch (mediator_.filterMode()) {
+                    case FilterMode::NONE: std::cout << "NONE\n"; break;
+                    case FilterMode::SOBEL: std::cout << "SOBEL\n"; break;
+                    case FilterMode::LAPLACIAN: std::cout << "LAPLACIAN\n"; break;
+                    case FilterMode::CANNY: std::cout << "CANNY\n"; break;
+                    case FilterMode::BLACKHAT: std::cout << "BLACKHAT\n"; break;
+                    case FilterMode::FRAMEDIFF: std::cout << "FRAMEDIFF\n"; break;
+                    case FilterMode::LAB_LIGHTNESS: std::cout << "LAB_LIGHTNESS\n"; break;
+                    case FilterMode::HEATMAP: std::cout << "HEATMAP\n"; break;
+                }
                 force_process = true;
             }
         }

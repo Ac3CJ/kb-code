@@ -406,13 +406,12 @@ void Mediator::drawPerfMetrics(cv::Mat& frame) const {
 }
 
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
+    debug_visualizer_.showFilters(raw_frame, filter_mode_);
+
     raw_frame.copyTo(display_frame);
     if (show_grid_) drawGrid(display_frame, 100);
     if (show_keyboard_) drawPhysicalKeyboard(display_frame);
     drawHands(display_frame);
-
-    if (debug_mode_ == DebugMode::PERF) drawPerfMetrics(display_frame);
-
 }
 
 } // namespace cv_keyboard

@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
     std::cout << "  D    — Toggle debug coordinate overlay\n";
     std::cout << "  G    — Toggle grid overlay\n";
     std::cout << "  K    — Toggle virtual keyboard overlay\n";
+    std::cout << "  F    — Cycle through debug filters (Sobel, Laplacian, Canny, Blackhat, FrameDiff, Lab Lightness)\n";
 
     cv_keyboard::Application app(settings);
 
