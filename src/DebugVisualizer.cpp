@@ -23,11 +23,14 @@ void DebugVisualizer::showFilters(const cv::Mat& current_frame, FilterMode mode)
         case FilterMode::BLACKHAT: applyBlackHat(); break;
         case FilterMode::FRAMEDIFF: applyFrameDiff(); break;
         case FilterMode::LAB_LIGHTNESS: applyLabLightness(current_frame); break;
+        case FilterMode::MOTION_LIGHTNESS: applyMotionLightness(current_frame); break;
+        case FilterMode::MOTION_HEATMAP: applyMotionHeatmap(current_frame); break;
         case FilterMode::HEATMAP: applyHeatmap(); break; // NEW
         default: break;
     }
 
     gray_.copyTo(prev_gray_);
+    current_frame.copyTo(prev_color_); // feed the motion filters (FrameDiff, Motion Lightness)
 }
 
 void DebugVisualizer::applySobel() {
@@ -89,10 +92,58 @@ void DebugVisualizer::applyHeatmap() {
 
     // Apply a thermal colormap. 
     // COLORMAP_JET maps low values to blue, and high values to red.
-    // Because we inverted the image, deep shadows will appear as bright red.
+    // Inverted image, deep shadows will appear as bright red.
     cv::applyColorMap(inverted, heatmap, cv::COLORMAP_JET);
 
     cv::setWindowTitle(window_name_, "Shadow Intensity Heatmap");
+    cv::imshow(window_name_, heatmap);
+}
+
+void DebugVisualizer::applyMotionLightness(const cv::Mat& color_frame) {
+    if (prev_color_.empty()) return;
+
+    // Stage 1 — Frame difference: isolate motion between consecutive frames.
+    // Anything static (desk, keyboard, resting shadows) cancels out.
+    cv::Mat diff;
+    cv::absdiff(color_frame, prev_color_, diff);
+
+    // Stage 2 — Lab lightness: reduce the motion residue to the L channel,
+    // so intensity-only changes (moving finger shadow, cast shadows) remain
+    // visible while chroma noise is suppressed.
+    cv::Mat lab;
+    std::vector<cv::Mat> channels;
+    
+    cv::cvtColor(diff, lab, cv::COLOR_BGR2Lab);
+    cv::split(lab, channels);
+
+    // Noise floor: zero out low-level sensor noise but keep the graduated
+    // lightness values above it (THRESH_TOZERO preserves intensity levels,
+    // unlike the binary threshold used by the plain FRAMEDIFF filter).
+    cv::threshold(channels[0], display_out_, 5, 255, cv::THRESH_TOZERO);
+
+    cv::setWindowTitle(window_name_, "Motion Lightness (Frame Diff -> Lab L)");
+    cv::imshow(window_name_, display_out_);
+}
+
+void DebugVisualizer::applyMotionHeatmap(const cv::Mat& color_frame) {
+    if (prev_color_.empty()) return;
+
+    // Stage 1 — Frame difference: isolate motion between consecutive frames.
+    cv::Mat diff, motion;
+    cv::absdiff(color_frame, prev_color_, diff);
+    cv::cvtColor(diff, motion, cv::COLOR_BGR2GRAY);
+
+    // Noise floor: zero out sensor noise while keeping graduated motion
+    // intensity (same floor as the Motion Lightness filter).
+    cv::threshold(motion, motion, 10, 255, cv::THRESH_TOZERO);
+
+    // Stage 2 — Heatmap: JET maps bright to red, so moving segments appear
+    // hot. No bitwise_not here (unlike the static shadow heatmap): motion is
+    // already bright in the diff, inverting would flood the frame with red.
+    cv::Mat heatmap;
+    cv::applyColorMap(motion, heatmap, cv::COLORMAP_JET);
+
+    cv::setWindowTitle(window_name_, "Motion Heatmap (Frame Diff -> JET)");
     cv::imshow(window_name_, heatmap);
 }
 

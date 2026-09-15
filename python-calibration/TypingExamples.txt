@@ -1,5 +1,13 @@
 Hello World!
 
+The quick brown fox jumps over the lazy dog.
+
+WAIT! Did you say the concert tickets are FREE?! I'll take 2.
+
+My temporary Wi-Fi password is: G0ld3n_Eagle$2026!
+
+Email info_desk@example.co.uk or visit https://www.example-site.com/faq
+
 Test 1
 The apostrophe (') wears many hats. It shows possession (Sarah's book), forms contractions (don't, can't), and even indicates the plural of letters (mind your p's and q's). While its functions may seem diverse, they all share a common thread: making written language more efficient and expressive.
 
@@ -8,3 +16,9 @@ Quotation marks do exactly what their name suggests -- they quote! They enclose 
 
 Test 3
 The question mark (?) is the punctuation of inquiry. It turns statements into questions, inviting responses and sparking curiosity. Whether it's a simple 'How are you?' or a complex philosophical question, the question mark signals a desire for information or a deeper understanding.
+
+Test 4
+The total bill for the dinner was $145.50, split among 4 people. That means each person owes exactly $36.37. If we decide to add a generous 20% tip, the new total becomes $174.60 (or roughly £135.00). I'll transfer my share of the money by 10:30 PM tonight so we can settle the account.
+
+Test 5
+We are thrilled to announce our keynote speaker for this year's event! Join us at @TechInnovate as we welcome the brilliant Dr. Jane Doe. Don't forget to use the official hashtag #TechConf2026 on X, Instagram, & LinkedIn. Q&A sessions will follow the main event (approx. 45 mins). See you there!

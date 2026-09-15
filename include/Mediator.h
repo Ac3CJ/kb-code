@@ -78,6 +78,8 @@ public:
         else if (filter_mode_ == FilterMode::BLACKHAT) filter_mode_ = FilterMode::FRAMEDIFF;
         else if (filter_mode_ == FilterMode::FRAMEDIFF) filter_mode_ = FilterMode::LAB_LIGHTNESS;
         else if (filter_mode_ == FilterMode::LAB_LIGHTNESS) filter_mode_ = FilterMode::HEATMAP;
+        else if (filter_mode_ == FilterMode::MOTION_LIGHTNESS) filter_mode_ = FilterMode::MOTION_HEATMAP;
+        else if (filter_mode_ == FilterMode::HEATMAP) filter_mode_ = FilterMode::MOTION_LIGHTNESS;
         else filter_mode_ = FilterMode::NONE; 
     }
 

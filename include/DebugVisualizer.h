@@ -6,7 +6,7 @@
 namespace cv_keyboard {
 
 // Moved from Mediator to be shared cleanly
-enum class FilterMode { NONE, SOBEL, LAPLACIAN, CANNY, BLACKHAT, FRAMEDIFF, LAB_LIGHTNESS, HEATMAP };
+enum class FilterMode { NONE, SOBEL, LAPLACIAN, CANNY, BLACKHAT, FRAMEDIFF, LAB_LIGHTNESS, HEATMAP, MOTION_LIGHTNESS, MOTION_HEATMAP };
 
 class DebugVisualizer {
 public:
@@ -18,6 +18,7 @@ public:
 
 private:
     cv::Mat gray_, prev_gray_, temp_16s_, display_out_;
+    cv::Mat prev_color_; // previous BGR frame, for motion-based filters
 
     const std::string window_name_ = "Debug Filter";
 
@@ -28,6 +29,8 @@ private:
     void applyFrameDiff();
     void applyLabLightness(const cv::Mat& color_frame);
     void applyHeatmap();
+    void applyMotionLightness(const cv::Mat& color_frame);
+    void applyMotionHeatmap(const cv::Mat& color_frame);
 };
 
 } // namespace cv_keyboard

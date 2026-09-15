@@ -209,17 +209,7 @@ void Application::handleKeyInput(int key) {
     } else if (key == 'f' || key == 'F') {
         if (mediator_) {
             mediator_->cycleFilterMode();
-            std::cout << "[Application] Filter mode: ";
-            switch (mediator_->filterMode()) {
-                case FilterMode::NONE: std::cout << "NONE\n"; break;
-                case FilterMode::SOBEL: std::cout << "SOBEL\n"; break;
-                case FilterMode::LAPLACIAN: std::cout << "LAPLACIAN\n"; break;
-                case FilterMode::CANNY: std::cout << "CANNY\n"; break;
-                case FilterMode::BLACKHAT: std::cout << "BLACKHAT\n"; break;
-                case FilterMode::FRAMEDIFF: std::cout << "FRAMEDIFF\n"; break;
-                case FilterMode::LAB_LIGHTNESS: std::cout << "LAB_LIGHTNESS\n"; break;
-                case FilterMode::HEATMAP: std::cout << "HEATMAP\n"; break;
-            }
+            std::cout << "[Application] Changing Filter (Read Window)\n";
         }
     }
 }
