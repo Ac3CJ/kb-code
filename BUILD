@@ -16,6 +16,7 @@ cc_library(
         "src/HandSmoother.cpp",
         "src/TypingEngine.cpp",
 
+        "include/HandData.h",
         "include/MediaPipeTracker.h",
         "include/IHandTracker.h",
         "include/Mediator.h",
