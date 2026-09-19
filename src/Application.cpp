@@ -40,6 +40,9 @@ bool Application::initPipeline() {
         mediator_.reset();
         return false;
     }
+
+    mediator_->updateCameraIntrinsics(settings_.active_source);
+
     return true;
 }
 
@@ -102,6 +105,10 @@ void Application::setCameraSource(CameraSource source) {
 
     if (!initCamera()) {
         std::cerr << "[Application] Failed to switch camera source.\n";
+    }
+
+    if (mediator_) {
+        mediator_->updateCameraIntrinsics(settings_.active_source);
     }
 }
 
@@ -198,6 +205,11 @@ void Application::handleKeyInput(int key) {
             std::cout << "[Application] Virtual Grid: "
                       << (mediator_->showGrid() ? "ON" : "OFF")
                       << "\n";
+        }
+    } else if (key == 'f' || key == 'F') {
+        if (mediator_) {
+            mediator_->cycleFilterMode();
+            std::cout << "[Application] Changing Filter (Read Window)\n";
         }
     }
 }

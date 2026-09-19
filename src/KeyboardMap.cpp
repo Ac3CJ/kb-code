@@ -53,13 +53,8 @@ void KeyboardMap::applyKalmanFilter(cv::Mat& H) {
     }
 }
 
-bool KeyboardMap::updateTransform(const cv::Mat& frame) {
-    // 1. Lazy-Initialize a "Dummy" Camera Matrix based on frame resolution
-    if (camera_matrix_.empty()) {
-        double focal_length = frame.cols; // Reasonable guess for most webcams
-        double center_x = frame.cols / 2.0;
-        double center_y = frame.rows / 2.0;
-        
+void KeyboardMap::updateCameraIntrinsics(CameraSource source) {
+    if (source == CameraSource::Phone) {
         // Honor Magic 6 Pro
         camera_matrix_ = (cv::Mat_<double>(3, 3) << 
             1419.58704, 0.00000, 958.93454,
@@ -68,15 +63,21 @@ bool KeyboardMap::updateTransform(const cv::Mat& frame) {
 
         dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
             0.38305, -2.50514, 0.00176, 0.00058, 4.69315);
-
+    } else {
         // Laptop Webcam
-        // camera_matrix_ = (cv::Mat_<double>(3, 3) << 
-        //     626.07198, 0.00000, 312.19162,
-        //     0.00000, 624.80842, 212.17207,
-        //     0.00000, 0.00000, 1.00000);
+        camera_matrix_ = (cv::Mat_<double>(3, 3) << 
+            626.07198, 0.00000, 312.19162,
+            0.00000, 624.80842, 212.17207,
+            0.00000, 0.00000, 1.00000);
 
-        // dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
-        //     -0.11006, 0.61957, -0.01141, -0.00822, -0.94693);
+        dist_coeffs_ = (cv::Mat_<double>(5, 1) << 
+            -0.11006, 0.61957, -0.01141, -0.00822, -0.94693);
+    }
+}
+
+bool KeyboardMap::updateTransform(const cv::Mat& frame) {
+    if (camera_matrix_.empty() || dist_coeffs_.empty()) {
+        return false;
     }
 
     std::vector<int> marker_ids;

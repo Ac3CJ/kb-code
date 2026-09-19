@@ -46,7 +46,7 @@ public:
 
     void loadUKLayout();
     bool updateTransform(const cv::Mat& frame);
-
+    void updateCameraIntrinsics(CameraSource source);
 
     cv::Point2f pixelToPhysical(float px, float py) const;
     cv::Point2f physicalToPixel(float x_cm, float y_cm) const;

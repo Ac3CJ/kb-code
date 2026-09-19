@@ -15,6 +15,7 @@
 
 #include "Settings.h"
 #include "KeyboardMap.h"
+#include "DebugVisualizer.h"
 
 #include "MediaPipeTracker.h"
 #include "RTMPoseTracker.h"
@@ -37,6 +38,8 @@ struct PerformanceMetrics {
 
 enum class DebugMode { OFF, POSE, PERF };
 
+// enum class FilterMode { NONE, SOBEL, LAPLACIAN, CANNY, BLACKHAT, FRAMEDIFF, LAB_LIGHTNESS };
+
 class Mediator {
 public:
     explicit Mediator(const std::string& tracker_type = "rtmpose", 
@@ -57,12 +60,29 @@ public:
     void setShowHands(bool show) { show_hands_ = show; }
     void toggleHands() { show_hands_ = !show_hands_; }
 
+    void updateCameraIntrinsics(CameraSource source);
+
     DebugMode debugMode() const { return debug_mode_; }
     void cycleDebugMode() {
         if (debug_mode_ == DebugMode::OFF) debug_mode_ = DebugMode::POSE;
         else if (debug_mode_ == DebugMode::POSE) debug_mode_ = DebugMode::PERF;
         else debug_mode_ = DebugMode::OFF;
     }
+
+    FilterMode filterMode() const { return filter_mode_; }
+    void cycleFilterMode() {
+        if (filter_mode_ == FilterMode::NONE) filter_mode_ = FilterMode::SOBEL;
+        else if (filter_mode_ == FilterMode::SOBEL) filter_mode_ = FilterMode::LAPLACIAN;
+        else if (filter_mode_ == FilterMode::LAPLACIAN) filter_mode_ = FilterMode::CANNY;
+        else if (filter_mode_ == FilterMode::CANNY) filter_mode_ = FilterMode::BLACKHAT;
+        else if (filter_mode_ == FilterMode::BLACKHAT) filter_mode_ = FilterMode::FRAMEDIFF;
+        else if (filter_mode_ == FilterMode::FRAMEDIFF) filter_mode_ = FilterMode::LAB_LIGHTNESS;
+        else if (filter_mode_ == FilterMode::LAB_LIGHTNESS) filter_mode_ = FilterMode::HEATMAP;
+        else if (filter_mode_ == FilterMode::MOTION_LIGHTNESS) filter_mode_ = FilterMode::MOTION_HEATMAP;
+        else if (filter_mode_ == FilterMode::HEATMAP) filter_mode_ = FilterMode::MOTION_LIGHTNESS;
+        else filter_mode_ = FilterMode::NONE; 
+    }
+
     const PerformanceMetrics& getMetrics() const { return metrics_; }
 
     bool showGrid() const { return show_grid_; }
@@ -112,6 +132,9 @@ private:
     PerformanceMetrics metrics_;
     DebugMode debug_mode_ = DebugMode::OFF;
     void drawPerfMetrics(cv::Mat& frame) const;
+
+    FilterMode filter_mode_ = FilterMode::NONE;
+    DebugVisualizer debug_visualizer_;
     bool show_debug_overlay_ = false;
 };
 

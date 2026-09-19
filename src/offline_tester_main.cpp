@@ -5,8 +5,10 @@
 #include <map>
 #include <memory>
 #include <fstream>
+#include <filesystem> // Added for clean path parsing
 
 #include "Mediator.h"
+#include "Settings.h"
 
 namespace cv_keyboard {
 
@@ -16,8 +18,21 @@ public:
                   const std::string& tracker_name, 
                   const std::string& processor_name) 
         : video_path_(video_path), mediator_(tracker_name, processor_name) {
+        
         cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
         cv::setMouseCallback(window_name_, onMouse, this);
+
+        // Parse the user's custom naming convention (e.g., w_sh_test1.mp4)
+        std::string filename = std::filesystem::path(video_path_).filename().string();
+        settings_.active_source = CameraSource::Phone;
+        std::string device = "Unknown Source";
+        if (filename.rfind("w_", 0) == 0) settings_.active_source = CameraSource::Laptop;
+        else if (filename.rfind("p_", 0) == 0) settings_.active_source = CameraSource::Phone;
+        
+        std::string length = "Test";
+        if (filename.find("_sh_") != std::string::npos) length = "Short Test";
+
+        video_meta_label_ = device + " | " + length + " | " + filename;
     }
 
     ~OfflineTester() {
@@ -36,15 +51,18 @@ public:
             return;
         }
 
+        mediator_.updateCameraIntrinsics(settings_.active_source);
+
         int total_frames = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_COUNT));
         int current_frame_idx = 0;
-        int highest_frame_processed = -1; // Tracks the "Frontier" of our cache
+        int highest_frame_processed = -1; 
         bool is_paused = true;
 
         cv::Mat raw_frame;
         cv::Mat display_frame;
 
         std::cout << "\n=== CV Keyboard Offline Tester ===\n";
+        std::cout << "Dataset: " << video_meta_label_ << "\n";
         std::cout << "Controls:\n";
         std::cout << "  SPACE : Play / Pause\n";
         std::cout << "  D     : Step Forward (1 Frame)\n";
@@ -52,6 +70,7 @@ public:
         std::cout << "  R     : Reset Zoom\n";
         std::cout << "  1-4   : Toggle Visuals (Grid, Skeleton, Hands, Keyboard)\n";
         std::cout << "  6     : Cycle Debug Mode (Off / Pose / Perf)\n";
+        std::cout << "  F     : Cycle Diagnostic Filters (Sobel, Canny, Heatmap, etc.)\n"; // Updated Help Menu
         std::cout << "  ESC   : Quit\n";
         std::cout << "Mouse:\n";
         std::cout << "  Left Click + Drag : Draw box to zoom in\n";
@@ -122,24 +141,18 @@ public:
             }
 
             if (force_process && !raw_frame.empty()) {
-                // Determine if we are moving into the future or scrubbing the past
                 if (current_frame_idx > highest_frame_processed) {
-                    // NEW FRAME: Run the heavy MediaPipe graph
                     mediator_.processFrame(raw_frame);
-
                     ablation_history.push_back(mediator_.getMetrics());
                     
                     auto latest = mediator_.latestHands();
                     if (latest) {
-                        // Create a brand new shared_ptr containing a physical copy of the vector
                         hand_cache_[current_frame_idx] = std::make_shared<std::vector<HandData>>(*latest);
                     } else {
                         hand_cache_[current_frame_idx] = nullptr;
                     }
-
                     highest_frame_processed = current_frame_idx;
                 } else {
-                    // PAST FRAME: Bypass MediaPipe and inject the cached data directly
                     mediator_.injectCachedHands(hand_cache_[current_frame_idx], raw_frame);
                 }
 
@@ -157,7 +170,6 @@ public:
                 force_process = false;
             }
 
-            // --- UI Rendering ---
             cv::Mat render_frame = display_frame.clone();
             
             if (is_selecting_ && selection_box_.width > 0 && selection_box_.height > 0) {
@@ -171,28 +183,18 @@ public:
                 zoomed_frame = render_frame;
             }
 
+            // Display Frame Number
             std::string frame_text = "Frame: " + std::to_string(current_frame_idx) + " / " + std::to_string(total_frames) + (is_paused ? " (PAUSED)" : "");
             cv::putText(zoomed_frame, frame_text, cv::Point(10, 25), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 0, 255), 2);
 
+            // Display Custom Dataset Info Overlay
+            cv::putText(zoomed_frame, video_meta_label_, cv::Point(10, 55), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255), 2);
+
             cv::imshow(window_name_, zoomed_frame);
 
-            // --- Keyboard Inputs ---
             int key = cv::waitKey(is_paused ? 30 : 16); 
             
             if (key == 27) { // ESC
-                std::cout << "\n\n[Tester] Video halted. Save Ablation Metrics to CSV? (y/n): ";
-                char ans;
-                std::cin >> ans;
-                if (ans == 'y' || ans == 'Y') {
-                    std::ofstream f("ablation_metrics.csv");
-                    f << "Frame,Homography_ms,MediaPipe_ms,Fusion_ms,ClickMath_ms,Total_ms\n";
-                    for (size_t i = 0; i < ablation_history.size(); ++i) {
-                        const auto& m = ablation_history[i];
-                        f << i << "," << m.homography_ms << "," << m.mp_tracker_ms << "," 
-                          << m.sensor_fusion_ms << "," << m.click_process_ms << "," << m.total_ms << "\n";
-                    }
-                    std::cout << "[Tester] Saved " << ablation_history.size() << " frames to ablation_metrics.csv\n";
-                }
                 break;
             } else if (key == ' ') {
                 is_paused = !is_paused;
@@ -209,15 +211,11 @@ public:
                     cap.set(cv::CAP_PROP_POS_FRAMES, current_frame_idx);
                     cap.read(raw_frame);
                     
-                    // Flush the corrupted forward-moving history
                     mediator_.resetClickState(); 
                     
-                    // Pre-Roll T-2
                     if (hand_cache_.count(current_frame_idx - 2)) {
                         mediator_.warmUpClickProcessor(hand_cache_[current_frame_idx - 2], raw_frame.cols, raw_frame.rows);
                     }
-                    
-                    // Pre-Roll T-1
                     if (hand_cache_.count(current_frame_idx - 1)) {
                         mediator_.warmUpClickProcessor(hand_cache_[current_frame_idx - 1], raw_frame.cols, raw_frame.rows);
                     }
@@ -228,7 +226,7 @@ public:
                 resetZoom();
             } else if (key == '1') {
                 mediator_.toggleGrid();
-                force_process = true; // Force redraw of overlay
+                force_process = true; 
             } else if (key == '2') {
                 mediator_.toggleFullSkeleton();
                 force_process = true;
@@ -244,6 +242,10 @@ public:
                 if (mediator_.debugMode() == DebugMode::OFF) std::cout << "OFF\n";
                 else if (mediator_.debugMode() == DebugMode::POSE) std::cout << "POSE\n";
                 else std::cout << "PERF\n";
+                force_process = true;
+            } else if (key == 'f' || key == 'F') { // Replaced '7' with 'F'
+                mediator_.cycleFilterMode();
+                std::cout << "[Application] Changing Filter (Read Window)\n";
                 force_process = true;
             }
         }
@@ -286,17 +288,18 @@ private:
 
     std::string video_path_;
     std::string window_name_ = "Offline Tester";
+    std::string video_meta_label_; // Added to store the parsed video info
     Mediator mediator_;
 
-    // Data Cache for Deterministic Playback
     std::map<int, std::shared_ptr<const std::vector<HandData>>> hand_cache_;
 
-    // Zoom and Pan states
     cv::Rect full_view_;
     cv::Rect current_view_;
     cv::Rect selection_box_;
     cv::Point selection_start_;
     bool is_selecting_ = false;
+
+    Settings settings_;
 };
 
 } // namespace cv_keyboard
@@ -311,7 +314,6 @@ int main(int argc, char** argv) {
     std::string tracker = "rtmpose";
     std::string processor = "zero_crossing";
 
-    // Parse command line arguments
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--tracker" && i + 1 < argc) {
@@ -320,10 +322,6 @@ int main(int argc, char** argv) {
             processor = argv[++i];
         }
     }
-
-    std::cout << "CV Keyboard Offline Tester\n";
-    std::cout << "Video: " << video_path << "\n";
-    std::cout << "Tracker: " << tracker << ", Processor: " << processor << "\n";
     
     cv_keyboard::OfflineTester tester(video_path, tracker, processor);
     tester.run();
