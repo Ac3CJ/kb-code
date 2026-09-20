@@ -247,6 +247,8 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         return; 
     }
 
+    virtual_keyboard_.drawAxes(frame, 3.0f);
+
     cv::Scalar border_color(0, 255, 0);         
     cv::Scalar hover_fill_color(0, 165, 255);   
     cv::Scalar click_fill_color(255, 0, 0);     
@@ -372,20 +374,23 @@ void Mediator::drawHands(cv::Mat& frame) {
                 
                 float conf = hand.hand_confidence;
                 
-                // Pull true Z height in CM from the new Physical Hand transform
-                float z_cm = 0.0f;
+                // Pull true X, Y, and Z coordinates in CM from the Physical Hand transform
+                float x_cm = 0.0f, y_cm = 0.0f, z_cm = 0.0f;
                 if (phys_hands && h < phys_hands->size()) {
+                    x_cm = (*phys_hands)[h].landmarks[idx].x_cm;
+                    y_cm = (*phys_hands)[h].landmarks[idx].y_cm;
                     z_cm = (*phys_hands)[h].landmarks[idx].z_cm;
                 }
 
                 std::ostringstream oss;
-                oss << tip_names[i] << " (" << idx << "): ("
-                    << px << ", " << py
-                    << ") vel= (" << pvx << ", " << pvy << ") Z="
-                    << std::fixed << std::setprecision(2)
-                    << z_cm << "cm"
-                    << " conf=" << std::fixed << std::setprecision(2)
-                    << conf;
+                oss << tip_names[i] << " (" << idx << "): px("
+                    << px << "," << py
+                    << ") vel=(" << pvx << "," << pvy << ") "
+                    << "Physical: ("
+                    << std::fixed << std::setprecision(1) << x_cm << ", "
+                    << std::fixed << std::setprecision(1) << y_cm << ", "
+                    << std::fixed << std::setprecision(1) << z_cm << ") "
+                    << "conf=" << std::fixed << std::setprecision(2) << conf;
 
                 cv::putText(frame, oss.str(),
                             cv::Point(text_x, text_y + 20 + i * 20),

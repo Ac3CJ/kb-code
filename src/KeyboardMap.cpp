@@ -285,4 +285,45 @@ std::string KeyboardMap::getKeyAt(float x_cm, float y_cm) const {
     return ""; 
 }
 
+float KeyboardMap::getCameraHeightCm() const {
+    if (!valid_pose_) return 0.0f;
+
+    cv::Mat R;
+    cv::Rodrigues(rvec_, R);
+    
+    // Calculate Camera position in world coordinates: C = -R^T * tvec
+    cv::Mat t = (cv::Mat_<double>(3, 1) << tvec_[0], tvec_[1], tvec_[2]);
+    cv::Mat C = -R.t() * t;
+    
+    // Because Z points down into the desk, the camera's Z position will be negative.
+    // We return the absolute vertical distance in centimeters.
+    return static_cast<float>(std::abs(C.at<double>(2, 0)));
+}
+
+void KeyboardMap::drawAxes(cv::Mat& frame, float length_cm) const {
+    if (!valid_pose_) {
+        return;
+    }
+    
+    // OpenCV natively draws the frame axes (X=Red, Y=Green, Z=Blue)
+    cv::drawFrameAxes(frame, camera_matrix_, dist_coeffs_, rvec_, tvec_, length_cm, 3);
+
+    // Define the 3D endpoints of the axes
+    std::vector<cv::Point3f> axis_points = {
+        cv::Point3f(length_cm, 0.0f, 0.0f), // X axis tip
+        cv::Point3f(0.0f, length_cm, 0.0f), // Y axis tip
+        cv::Point3f(0.0f, 0.0f, length_cm)  // Z axis tip
+    };
+    
+    std::vector<cv::Point2f> image_points;
+    
+    // Project the 3D points onto the 2D camera sensor
+    cv::projectPoints(axis_points, rvec_, tvec_, camera_matrix_, dist_coeffs_, image_points);
+
+    // Draw the labels at the projected tips
+    cv::putText(frame, "X", image_points[0], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 255), 2);
+    cv::putText(frame, "Y", image_points[1], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 0), 2);
+    cv::putText(frame, "Z", image_points[2], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 0, 0), 2);
+}
+
 } // namespace cv_keyboard

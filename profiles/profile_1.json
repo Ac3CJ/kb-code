@@ -1,5 +1,5 @@
 {
-  "LeftHand": {
+  "Hand0": {
     "is_valid": true,
     "bone_lengths_cm": {
       "0": 10.6776,
@@ -27,7 +27,7 @@
       "22": 3.00597
     }
   },
-  "RightHand": {
+  "Hand1": {
     "is_valid": true,
     "bone_lengths_cm": {
       "0": 9.56386,

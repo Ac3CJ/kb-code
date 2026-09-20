@@ -40,11 +40,11 @@ private:
     int frames_collected_ = 0;
     const int MAX_CALIBRATION_FRAMES = 30;
 
-    std::vector<std::array<Landmark, 21>> left_hand_buffer_;
-    std::vector<std::array<Landmark, 21>> right_hand_buffer_;
+    std::vector<std::array<Landmark, 21>> hand0_buffer_;
+    std::vector<std::array<Landmark, 21>> hand1_buffer_;
 
-    HandProfile left_profile_;
-    HandProfile right_profile_;
+    HandProfile hand0_profile_;
+    HandProfile hand1_profile_;
 
     void finalizeCalibration(const KeyboardMap& kb_map, int frame_width, int frame_height);
     void calculateBoneLengths(const std::vector<std::array<Landmark, 21>>& buffer, HandProfile& profile, const KeyboardMap& kb_map, int frame_width, int frame_height);

@@ -57,6 +57,11 @@ public:
     const std::vector<ArucoMarkerDef>& getMarkers() const { return markers_; }
     bool hasValidTransform() const { return valid_pose_; }
 
+    float getCameraHeightCm() const;
+
+    // Renders the 3D X/Y/Z origin axes onto the frame
+    void drawAxes(cv::Mat& frame, float length_cm = 5.0f) const;
+
 private:
     std::vector<KeyDefinition> keys_;
     std::vector<ArucoMarkerDef> markers_;
@@ -65,8 +70,8 @@ private:
     void addRow(float start_x, float y, const std::vector<std::pair<std::string, float>>& row_data);
 
     // Vision / Mapping components
-    cv::Mat homography_;     // Pixels -> Physical matrix
-    cv::Mat inv_homography_; // Physical -> Pixels matrix
+    cv::Mat homography_;     
+    cv::Mat inv_homography_; 
 
     // Kalman filter for smoothing the homography
     void applyKalmanFilter(cv::Mat& H);
