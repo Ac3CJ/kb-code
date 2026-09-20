@@ -1,0 +1,18 @@
+# Z-Estimation Kinematic Profiling & Calibration
+
+## Calibration Phase
+1. The user places one hand flat on the keyboard
+2. The program will detect their splayed out hand and measure the raw pixel data from all 21 landmarks (This will be depreciated for a bit, just trust that the hands are splayed out but keep code open to adding the check)
+3. The program will detect 1s worth of frames (30 frames) then grab the median of all of the values for the respective landmarks (should prevent any errors from the hand tracker)
+4. Chosen values will be used to calc the following (Total - 23 Connections): 
+	1. Thumb: $L_{0,1}, L_{1,2}, L_{2,3}, L_{3,4}$
+	2. Index: $L_{0,5}, L_{5,6}, L_{6,7}, L_{7,8}$
+	3. Middle: $L_{0,9}, L_{9,10}, L_{10,11}, L_{11,12}$
+	4. Ring: $L_{0,13}, L_{13,14}, L_{14,15}, L_{15,16}$
+	5. Pinky: $L_{0,17}, L_{17,18}, L_{18,19}, L_{19,20}$
+	6. Other: $L_{5,9}, L_{9,13}, L_{13,17}$
+5. These will be converted from pixel lengths ($L_{n,m}$) to keyboard frame lengths/REAL lengths ($L'_{n,m}$) using the keyboard reference frame and the homography PnP matrices.
+6. With the new lengths, save these into a JSON file and keep all 23 connections saved as well as these will come in handy (ESSENTIAL)
+7. It might be possible to abstract the lengths entirely and only focus on the $L'_{0,m}$ lengths and the lengths from the valid $m$ points to the finger tips or even simply it to a 6 length system where the max length would be the addition of all the lengths leading to the finger tips when flexed out.
+8. Once all of the lengths are calculated, store them in a JSON file with the handedness and each length.
+9. Each file will be designated to a profile and store both hands.

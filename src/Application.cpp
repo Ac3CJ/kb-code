@@ -36,7 +36,8 @@ Application::~Application() {
 
 bool Application::initPipeline() {
     mediator_ = std::make_unique<Mediator>(settings_.tracker_name, settings_.processor_name);
-    if (!mediator_->init()) {
+    
+    if (!mediator_->init(settings_.profile_path)) {
         mediator_.reset();
         return false;
     }
@@ -210,6 +211,11 @@ void Application::handleKeyInput(int key) {
         if (mediator_) {
             mediator_->cycleFilterMode();
             std::cout << "[Application] Changing Filter (Read Window)\n";
+        }
+    } else if (key == 'b' || key == 'B') {
+        if (mediator_) {
+            mediator_->triggerCalibration();
+            std::cout << "[Application] Triggering Calibration\n";
         }
     }
 }

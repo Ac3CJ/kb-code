@@ -16,6 +16,7 @@ cc_library(
         "src/HandSmoother.cpp",
         "src/TypingEngine.cpp",
         "src/DebugVisualizer.cpp",
+        "src/KinematicCalibrator.cpp",
 
         "include/HandData.h",
         "include/MediaPipeTracker.h",
@@ -31,6 +32,9 @@ cc_library(
         "include/HandSmoother.h",
         "include/TypingEngine.h",
         "include/DebugVisualizer.h",
+        "include/KinematicCalibrator.h",
+        "include/PhysicalHand.h",
+        "include/IPhysicalClickProcessor.h"
     ],
     includes = ["include"],
     linkopts = [

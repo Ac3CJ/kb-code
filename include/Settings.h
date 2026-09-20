@@ -27,6 +27,8 @@ struct Settings {
     std::string tracker_name = "rtmpose";
     std::string processor_name = "zero_crossing";
 
+    std::string profile_path = "";
+
     /// Returns the device path for the currently active source
     std::string activeDevicePath() const {
         return active_source == CameraSource::Laptop

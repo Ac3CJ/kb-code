@@ -19,12 +19,13 @@
 
 #include "MediaPipeTracker.h"
 #include "RTMPoseTracker.h"
-// #include "YoloTracker.h"
 
 #include "ZeroCrossingProcessor.h"
 #include "InterpolationProcessor.h"
 
 #include "TypingEngine.h"
+#include "KinematicCalibrator.h"
+#include "IPhysicalClickProcessor.h"
 
 namespace cv_keyboard {
 
@@ -38,17 +39,19 @@ struct PerformanceMetrics {
 
 enum class DebugMode { OFF, POSE, PERF };
 
-// enum class FilterMode { NONE, SOBEL, LAPLACIAN, CANNY, BLACKHAT, FRAMEDIFF, LAB_LIGHTNESS };
-
 class Mediator {
 public:
     explicit Mediator(const std::string& tracker_type = "rtmpose", 
                       const std::string& processor_type = "zero_crossing");
     ~Mediator();
 
-    bool init();
+    bool init(const std::string& profile_path = "");
+    void triggerCalibration() { kinematic_calibrator_.startCalibration(); }
+
     void processFrame(const cv::Mat& frame);
     std::shared_ptr<const std::vector<HandData>> latestHands() const;
+    std::shared_ptr<const std::vector<PhysicalHand>> latestPhysicalHands() const; // NEW
+
     bool isInitialised() const;
 
     // --- State Toggles ---
@@ -97,7 +100,12 @@ public:
 
     void injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame);
 
-    void resetClickState() {if (click_processor_) click_processor_->reset(); typing_engine_.reset();}
+    void resetClickState() {
+        if (click_processor_) click_processor_->reset(); 
+        if (physical_click_processor_) physical_click_processor_->reset(); // NEW
+        typing_engine_.reset();
+    }
+    
     void warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>> past_hands, int frame_width, int frame_height);
 
 private:
@@ -109,13 +117,18 @@ private:
     void drawDebug(cv::Mat& frame);
 
     KeyboardMap virtual_keyboard_;
+    
+    // Parallel Processors
     std::unique_ptr<IClickProcessor> click_processor_;
+    std::unique_ptr<IPhysicalClickProcessor> physical_click_processor_; // NEW
     
     mutable cv::Mat cached_kb_overlay_;
     mutable cv::Mat cached_kb_mask_;
 
     std::unique_ptr<IHandTracker> hand_tracker_;
+    
     std::shared_ptr<const std::vector<HandData>> latest_hands_;
+    std::shared_ptr<const std::vector<PhysicalHand>> latest_physical_hands_; // NEW
     mutable std::mutex hands_mutex_;
 
     TypingEngine typing_engine_;
@@ -124,15 +137,16 @@ private:
     mutable cv::Mat cached_grid_mask_; 
     mutable cv::Size last_frame_size_;
 
-    bool show_grid_ = false;          // 1: Grid off by default
-    bool show_full_skeleton_ = false; // 2: Full skeleton off by default
-    bool show_hands_ = true;          // 3: Fingertips on by default
-    bool show_keyboard_ = true;       // 4: Keyboard on by default
+    bool show_grid_ = false;          
+    bool show_full_skeleton_ = false; 
+    bool show_hands_ = true;          
+    bool show_keyboard_ = true;       
     
     PerformanceMetrics metrics_;
     DebugMode debug_mode_ = DebugMode::OFF;
     void drawPerfMetrics(cv::Mat& frame) const;
 
+    KinematicCalibrator kinematic_calibrator_;
     FilterMode filter_mode_ = FilterMode::NONE;
     DebugVisualizer debug_visualizer_;
     bool show_debug_overlay_ = false;

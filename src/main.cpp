@@ -13,19 +13,25 @@ int main(int argc, char** argv) {
             settings.tracker_name = argv[++i];
         } else if (arg == "--processor" && i + 1 < argc) {
             settings.processor_name = argv[++i];
+        } else if (arg == "--profile" && i + 1 < argc) {
+            settings.profile_path = argv[++i];
         }
     }
 
     std::cout << "CV Keyboard v0.1.0\n";
     std::cout << "Tracker: " << settings.tracker_name << ", Processor: " << settings.processor_name << "\n";
+    if (!settings.profile_path.empty()) {
+        std::cout << "Profile: " << settings.profile_path << "\n";
+    }
     std::cout << "Controls:\n";
     std::cout << "  ESC  — Quit\n";
+    std::cout << "  B    — Capture Kinematic Baseline (Calibration)\n";
     std::cout << "  C    — Toggle camera source (laptop / phone)\n";
     std::cout << "  S    — Toggle skeleton mode (finger tips / full 21-point)\n";
     std::cout << "  D    — Toggle debug coordinate overlay\n";
     std::cout << "  G    — Toggle grid overlay\n";
     std::cout << "  K    — Toggle virtual keyboard overlay\n";
-    std::cout << "  F    — Cycle through debug filters (Sobel, Laplacian, Canny, Blackhat, FrameDiff, Lab Lightness, Heatmap, Motion Lightness, Motion Heatmap)\n";
+    std::cout << "  F    — Cycle through debug filters\n";
 
     cv_keyboard::Application app(settings);
 

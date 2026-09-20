@@ -2,8 +2,6 @@
 
 namespace cv_keyboard {
 
-// Colours (BGR for OpenCV)
-// Colors mapped to: {THUMB, INDEX, MIDDLE, RING, PINKY} in BGR format
 static const cv::Scalar kFingerTipColors[] = {
     cv::Scalar(0, 0, 255),    // Thumb: Red
     cv::Scalar(0, 165, 255),  // Index: Orange
@@ -23,30 +21,43 @@ static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
 Mediator::Mediator(const std::string& tracker_type, const std::string& processor_type) {
-    // Instantiate Tracker
     if (tracker_type == "mediapipe") {
         hand_tracker_ = std::make_unique<MediaPipeTracker>();
     } else {
-        // Default / RTMPose fallback
         hand_tracker_ = std::make_unique<RTMPoseTracker>();
     }
 
-    // Instantiate Processor
     if (processor_type == "interpolation") {
         click_processor_ = std::make_unique<InterpolationProcessor>();
     } else {
-        // Default / ZeroCrossing fallback
         click_processor_ = std::make_unique<ZeroCrossingProcessor>();
     }
+    
+    // NOTE: physical_click_processor_ is left as nullptr until we implement the 3D classes
 }
 
 Mediator::~Mediator() = default;
 
-bool Mediator::init() {
+bool Mediator::init(const std::string& profile_path) {
     if (!hand_tracker_->init()) {
         std::cerr << "[Mediator] HandTracker initialisation failed.\n";
         return false;
     }
+    
+    if (!profile_path.empty()) {
+        if (!kinematic_calibrator_.loadProfile(profile_path)) {
+            std::cerr << "\n[FATAL ERROR] Failed to load valid kinematic profile at '" 
+                      << profile_path << "'. Terminating pipeline.\n";
+            return false;
+        }
+        std::cout << "[Mediator] Loaded Kinematic Profile: " << profile_path << "\n";
+    } else {
+        std::cout << "\n==================================================================\n";
+        std::cout << "[WARNING] NO PROFILE PROVIDED.\n";
+        std::cout << "Please place hands flat on the keyboard and press 'B' to calibrate.\n";
+        std::cout << "==================================================================\n\n";
+    }
+
     std::cout << "[Mediator] Pipeline initialised.\n";
     virtual_keyboard_.loadUKLayout();
     return true;
@@ -75,10 +86,31 @@ void Mediator::processFrame(const cv::Mat& frame) {
     }
 
     int64_t t2 = cv::getTickCount();
+    
     if (latest_hands_) {
-        click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+        if (kinematic_calibrator_.isCalibrating()) {
+            if (kinematic_calibrator_.updateCalibration(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows)) {
+                kinematic_calibrator_.saveProfile("profiles/default_kinematic_profile.json");
+            }
+        } else {
+            // 1. New Parallel 3D Pipeline Layer: Transform normalized pixels to Physical CM
+            auto phys_hands = kinematic_calibrator_.transform(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+            {
+                std::lock_guard<std::mutex> lock(hands_mutex_);
+                latest_physical_hands_ = std::make_shared<std::vector<PhysicalHand>>(std::move(phys_hands));
+            }
 
-        typing_engine_.processClicks(click_processor_->getClickedKeys(), hand_tracker_->latestTimestamp());
+            // 2. Legacy 2D Processing
+            click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+            
+            // 3. New Physical 3D Processing
+            if (physical_click_processor_) {
+                physical_click_processor_->process(*latest_physical_hands_, virtual_keyboard_);
+            }
+
+            // Using the legacy pipeline's clicked keys for typing until the physical one is ready
+            typing_engine_.processClicks(click_processor_->getClickedKeys(), hand_tracker_->latestTimestamp());
+        }
     }
 
     int64_t t3 = cv::getTickCount();
@@ -91,28 +123,44 @@ std::shared_ptr<const std::vector<HandData>> Mediator::latestHands() const {
     return latest_hands_;
 }
 
-// Test function to inject cached hand data and re-run the ClickProcessor logic
+std::shared_ptr<const std::vector<PhysicalHand>> Mediator::latestPhysicalHands() const {
+    std::lock_guard<std::mutex> lock(hands_mutex_);
+    return latest_physical_hands_;
+}
+
 void Mediator::injectCachedHands(std::shared_ptr<const std::vector<HandData>> cached_hands, const cv::Mat& frame) {
-    // 1. We MUST update the ArUco board transform for this frame (ArUco is not stateful, so this is safe)
     virtual_keyboard_.updateTransform(frame);
 
-    // 2. Inject the cached MediaPipe data bypassing the ML model
     {
         std::lock_guard<std::mutex> lock(hands_mutex_);
         latest_hands_ = cached_hands;
     }
 
-    // 3. Re-run the ClickProcessor logic so we can experiment with it!
     if (latest_hands_) {
+        // Run transform for the offline tester caching
+        auto phys_hands = kinematic_calibrator_.transform(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+        {
+            std::lock_guard<std::mutex> lock(hands_mutex_);
+            latest_physical_hands_ = std::make_shared<std::vector<PhysicalHand>>(std::move(phys_hands));
+        }
+
         click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
+        
+        if (physical_click_processor_) {
+            physical_click_processor_->process(*latest_physical_hands_, virtual_keyboard_);
+        }
     }
 }
 
 void Mediator::warmUpClickProcessor(std::shared_ptr<const std::vector<HandData>> past_hands, int frame_width, int frame_height) {
     if (past_hands && click_processor_) {
-        // We evaluate the historical hands against the CURRENT ArUco board transform.
-        // Since T-2 was only 60ms ago, it is mathematically safe to assume the desk hasn't moved.
         click_processor_->process(*past_hands, virtual_keyboard_, frame_width, frame_height);
+        
+        if (physical_click_processor_) {
+            // Derive historical physical states inline for the warmup
+            auto historical_phys_hands = kinematic_calibrator_.transform(*past_hands, virtual_keyboard_, frame_width, frame_height);
+            physical_click_processor_->process(historical_phys_hands, virtual_keyboard_);
+        }
     }
 }
 
@@ -120,12 +168,7 @@ void Mediator::updateCameraIntrinsics(CameraSource source) {
     virtual_keyboard_.updateCameraIntrinsics(source);
 }
 
-// ---------------------------------------------------------------------------
-// Overlay rendering
-// ---------------------------------------------------------------------------
-
 void Mediator::drawGrid(cv::Mat& frame, int step) const {
-    // 1. Only draw the grid and generate the mask from scratch if resolution changed
     if (cached_grid_overlay_.empty() || last_frame_size_ != frame.size()) {
         last_frame_size_ = frame.size();
         cached_grid_overlay_ = cv::Mat::zeros(frame.size(), frame.type());
@@ -133,11 +176,9 @@ void Mediator::drawGrid(cv::Mat& frame, int step) const {
         int width = frame.cols;
         int height = frame.rows;
         
-        // Slightly softer colors since we no longer have alpha blending
         cv::Scalar grid_color(200, 200, 200); 
         cv::Scalar label_color(180, 180, 180);
 
-        // Draw lines and labels
         for (int x = step; x < width; x += step) {
             cv::line(cached_grid_overlay_, cv::Point(x, 0), cv::Point(x, height), grid_color, 1);
             cv::putText(cached_grid_overlay_, std::to_string(x), cv::Point(x + 4, 15),
@@ -149,7 +190,6 @@ void Mediator::drawGrid(cv::Mat& frame, int step) const {
                         cv::FONT_HERSHEY_SIMPLEX, 0.4, label_color, 1);
         }
         
-        // Draw intersection coordinates ONCE
         for (int x = step; x < width; x += step) {
             for (int y = step; y < height; y += step) {
                 std::string coord_label = "(" + std::to_string(x) + "," + std::to_string(y) + ")";
@@ -158,15 +198,9 @@ void Mediator::drawGrid(cv::Mat& frame, int step) const {
             }
         }
 
-        // --- NEW: Generate the mask ---
-        // Any pixel in the overlay that isn't pure black (0,0,0) becomes 255 (white) in the mask.
         cv::cvtColor(cached_grid_overlay_, cached_grid_mask_, cv::COLOR_BGR2GRAY);
         cv::threshold(cached_grid_mask_, cached_grid_mask_, 1, 255, cv::THRESH_BINARY);
     }
-
-    // 2. Every frame, do a lightning-fast masked copy.
-    // OpenCV iterates over the mask. If mask[x,y] == 255, it copies overlay[x,y] to frame[x,y].
-    // It entirely skips pixels where mask[x,y] == 0.
     cached_grid_overlay_.copyTo(frame, cached_grid_mask_);
 }
 
@@ -175,34 +209,24 @@ void Mediator::drawVirtualKeyboard(cv::Mat& frame) {
         last_frame_size_ = frame.size();
         cached_kb_overlay_ = cv::Mat::zeros(frame.size(), frame.type());
         
-        // We want the keyboard to take up exactly half the screen width
         float target_px_width = frame.cols / 2.0f;
-        float target_px_height = frame.rows / 2.0f; // Optional: limit height to half the screen
-        
-        // Our UK layout is exactly 15u wide
+        float target_px_height = frame.rows / 2.0f; 
         float kb_width_u = 15.0f; 
-        
-        // Calculate pixels per 'u'
         float px_per_u = target_px_width / kb_width_u;
-        
-        // Offset to push it to the top right corner
-        float offset_x = frame.cols - target_px_width - 20.0f; // Slight 20px padding from the right edge
-        float offset_y = frame.rows - target_px_height - 20.0f; // Slight 20px padding from the top edge
+        float offset_x = frame.cols - target_px_width - 20.0f; 
+        float offset_y = frame.rows - target_px_height - 20.0f; 
 
-        cv::Scalar border_color(0, 255, 0); // Green
-        cv::Scalar text_color(255, 255, 255); // White
+        cv::Scalar border_color(0, 255, 0); 
+        cv::Scalar text_color(255, 255, 255); 
 
         for (const auto& key : virtual_keyboard_.getKeys()) {
-            // Convert 'u' coordinates to pixel coordinates
             int px = static_cast<int>(offset_x + (key.x_u * px_per_u));
             int py = static_cast<int>(offset_y + (key.y_u * px_per_u));
             int pw = static_cast<int>(key.width_u * px_per_u);
             int ph = static_cast<int>(key.height_u * px_per_u);
 
-            // Draw the key border
             cv::rectangle(cached_kb_overlay_, cv::Rect(px, py, pw, ph), border_color, 2);
 
-            // Center the text inside the key
             int baseline = 0;
             cv::Size text_size = cv::getTextSize(key.id, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseline);
             int text_x = px + (pw - text_size.width) / 2;
@@ -212,12 +236,9 @@ void Mediator::drawVirtualKeyboard(cv::Mat& frame) {
                         cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
         }
 
-        // Generate the lightning-fast copy mask
         cv::cvtColor(cached_kb_overlay_, cached_kb_mask_, cv::COLOR_BGR2GRAY);
         cv::threshold(cached_kb_mask_, cached_kb_mask_, 1, 255, cv::THRESH_BINARY);
     }
-
-    // Drop it onto the frame
     cached_kb_overlay_.copyTo(frame, cached_kb_mask_);
 }
 
@@ -226,10 +247,10 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         return; 
     }
 
-    cv::Scalar border_color(0, 255, 0);         // Green border
-    cv::Scalar hover_fill_color(0, 165, 255);   // Orange fill (BGR)
-    cv::Scalar click_fill_color(255, 0, 0);     // Blue fill (BGR)
-    cv::Scalar text_color(255, 255, 255);       // White text
+    cv::Scalar border_color(0, 255, 0);         
+    cv::Scalar hover_fill_color(0, 165, 255);   
+    cv::Scalar click_fill_color(255, 0, 0);     
+    cv::Scalar text_color(255, 255, 255);       
 
     for (const auto& key : virtual_keyboard_.getKeys()) {
         float x = key.x_cm();
@@ -237,7 +258,6 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         float w = key.width_cm();
         float h = key.height_cm();
 
-        // 1. Map physical corners to camera pixels
         cv::Point2f p1 = virtual_keyboard_.physicalToPixel(x, y);
         cv::Point2f p2 = virtual_keyboard_.physicalToPixel(x + w, y);
         cv::Point2f p3 = virtual_keyboard_.physicalToPixel(x + w, y + h);
@@ -251,31 +271,20 @@ void Mediator::drawPhysicalKeyboard(cv::Mat& frame) {
         };
         std::vector<std::vector<cv::Point>> contours = { pts };
 
-        // 2. Check if hovered and draw a semi-transparent filled polygon
         if (click_processor_->isClicked(key.id)) {
             cv::Mat overlay;
             frame.copyTo(overlay);
-            
-            // Fill the polygon on the duplicate frame
             cv::fillPoly(overlay, contours, click_fill_color);
-            
-            // Blend the overlay back into the original frame (50% opacity)
             cv::addWeighted(overlay, 0.5, frame, 0.5, 0, frame);
         } else if (click_processor_->isHovered(key.id)) {
             cv::Mat overlay;
             frame.copyTo(overlay);
-            
-            // Fill the polygon on the duplicate frame
             cv::fillPoly(overlay, contours, hover_fill_color);
-            
-            // Blend the overlay back into the original frame (50% opacity)
             cv::addWeighted(overlay, 0.5, frame, 0.5, 0, frame);
         }
 
-        // 3. Draw the persistent green border
         cv::polylines(frame, contours, true, border_color, 2);
 
-        // 4. Center text label inside the key polygon
         int center_x = (pts[0].x + pts[1].x + pts[2].x + pts[3].x) / 4;
         int center_y = (pts[0].y + pts[1].y + pts[2].y + pts[3].y) / 4;
 
@@ -293,6 +302,7 @@ void Mediator::drawHands(cv::Mat& frame) {
         return;
     }
     auto hands = latestHands();
+    auto phys_hands = latestPhysicalHands(); // Retrieve the parallel 3D state
     if (!hands || hands->empty()) {
         return;
     }
@@ -300,17 +310,13 @@ void Mediator::drawHands(cv::Mat& frame) {
     int frame_w = frame.cols;
     int frame_h = frame.rows;
 
-    // Drawing hands and landmarks
     for (size_t h = 0; h < hands->size(); ++h) {
         const auto& hand = (*hands)[h];
-
-        // Draw hand label (left/right/unknown)
         std::string hand_label = "Hand " + std::to_string(h + 1);
         cv::putText(frame, hand_label, cv::Point(10, 30 + static_cast<int>(h) * 25),
                     cv::FONT_HERSHEY_SIMPLEX, 0.6, kColorHandLabel, 2);
 
         if (show_full_skeleton_) {
-            // --- Full skeleton mode: draw all 21 landmarks + connections ---
             for (int i = 0; i < 21; ++i) {
                 int px = static_cast<int>(hand.landmarks[i].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[i].y * frame_h);
@@ -337,10 +343,8 @@ void Mediator::drawHands(cv::Mat& frame) {
                 cv::line(frame, p0, p1, kColorConnection, kConnectionThickness);
             }
         } else {
-            // --- Finger tips only mode ---
             for (int i = 0; i < 5; ++i) {
                 int idx = FINGER_TIP_INDICES[i];
-
                 int px = static_cast<int>(hand.landmarks[idx].x * frame_w);
                 int py = static_cast<int>(hand.landmarks[idx].y * frame_h);
 
@@ -349,7 +353,6 @@ void Mediator::drawHands(cv::Mat& frame) {
             }
         }
 
-        // --- Debug overlay ---
         if (debug_mode_ == DebugMode::POSE) {
             int text_x = 10;
             int text_y = 80 + static_cast<int>(h) * 140;
@@ -367,16 +370,20 @@ void Mediator::drawHands(cv::Mat& frame) {
                 int pvx = static_cast<int>(hand.landmarks[idx].vx * frame_w);
                 int pvy = static_cast<int>(hand.landmarks[idx].vy * frame_h);
                 
-
                 float conf = hand.hand_confidence;
+                
+                // Pull true Z height in CM from the new Physical Hand transform
+                float z_cm = 0.0f;
+                if (phys_hands && h < phys_hands->size()) {
+                    z_cm = (*phys_hands)[h].landmarks[idx].z_cm;
+                }
 
                 std::ostringstream oss;
                 oss << tip_names[i] << " (" << idx << "): ("
                     << px << ", " << py
-                    << std::fixed << std::setprecision(6)
-                    << ") vel= (" << pvx << ", " << pvy << ") z="
-                    << std::fixed << std::setprecision(3)
-                    << hand.landmarks[idx].z
+                    << ") vel= (" << pvx << ", " << pvy << ") Z="
+                    << std::fixed << std::setprecision(2)
+                    << z_cm << "cm"
                     << " conf=" << std::fixed << std::setprecision(2)
                     << conf;
 
@@ -410,7 +417,7 @@ void Mediator::drawPerfMetrics(cv::Mat& frame) const {
 }
 
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
-    debug_visualizer_.showFilters(raw_frame, filter_mode_);
+    // debug_visualizer_.showFilters(raw_frame, filter_mode_);
 
     raw_frame.copyTo(display_frame);
     if (show_grid_) drawGrid(display_frame, 100);
