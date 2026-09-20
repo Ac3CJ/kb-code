@@ -419,15 +419,41 @@ void Mediator::drawPerfMetrics(cv::Mat& frame) const {
     drawText("Fusion     : " + std::to_string(metrics_.sensor_fusion_ms).substr(0, 5) + " ms");
     drawText("Homography : " + std::to_string(metrics_.homography_ms).substr(0, 5) + " ms");
     drawText("Click Math : " + std::to_string(metrics_.click_process_ms).substr(0, 5) + " ms");
+
+    // Dynamically display the active filter if one is engaged
+    if (filter_mode_ != FilterMode::NONE) {
+        y += 10; // Visual padding
+        drawText("--- ACTIVE FILTER ---");
+        
+        std::string filter_name = "UNKNOWN";
+        switch (filter_mode_) {
+            case FilterMode::SOBEL:            filter_name = "SOBEL"; break;
+            case FilterMode::LAPLACIAN:        filter_name = "LAPLACIAN"; break;
+            case FilterMode::CANNY:            filter_name = "CANNY"; break;
+            case FilterMode::BLACKHAT:         filter_name = "BLACKHAT"; break;
+            case FilterMode::FRAMEDIFF:        filter_name = "FRAME DIFF"; break;
+            case FilterMode::LAB_LIGHTNESS:    filter_name = "LAB LIGHTNESS"; break;
+            case FilterMode::HEATMAP:          filter_name = "HEATMAP"; break;
+            case FilterMode::MOTION_LIGHTNESS: filter_name = "MOTION LIGHTNESS"; break;
+            case FilterMode::MOTION_HEATMAP:   filter_name = "MOTION HEATMAP"; break;
+            default: break;
+        }
+        drawText(filter_name);
+    }
 }
 
 void Mediator::renderOverlay(const cv::Mat& raw_frame, cv::Mat& display_frame) {
-    // debug_visualizer_.showFilters(raw_frame, filter_mode_);
+    debug_visualizer_.showFilters(raw_frame, filter_mode_);
 
     raw_frame.copyTo(display_frame);
+    
     if (show_grid_) drawGrid(display_frame, 100);
     if (show_keyboard_) drawPhysicalKeyboard(display_frame);
     drawHands(display_frame);
+    
+    if (debug_mode_ == DebugMode::PERF) {
+        drawPerfMetrics(display_frame);
+    }
 }
 
 } // namespace cv_keyboard
