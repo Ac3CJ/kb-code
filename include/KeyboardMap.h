@@ -62,6 +62,11 @@ public:
     // Renders the 3D X/Y/Z origin axes onto the frame
     void drawAxes(cv::Mat& frame, float length_cm = 5.0f) const;
 
+    // New getters for 3D PnP Transformation
+    cv::Mat getCameraMatrix() const { return camera_matrix_; }
+    cv::Vec3d getRvec() const { return rvec_; }
+    cv::Vec3d getTvec() const { return tvec_; }
+
 private:
     std::vector<KeyDefinition> keys_;
     std::vector<ArucoMarkerDef> markers_;

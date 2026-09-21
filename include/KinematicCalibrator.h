@@ -15,6 +15,7 @@ namespace cv_keyboard {
 struct HandProfile {
     bool is_valid = false;
     std::map<int, float> bone_lengths_cm; 
+    std::map<std::string, float> angles_rad; // NEW: Stores triangle/knuckle angles
 };
 
 class KinematicCalibrator {
