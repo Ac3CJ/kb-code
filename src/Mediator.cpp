@@ -20,20 +20,21 @@ static constexpr int kConnectionThickness = 2;
 static constexpr double kFontScale = 0.45;
 static constexpr int kFontThickness = 1;
 
-Mediator::Mediator(const std::string& tracker_type, const std::string& processor_type) {
+Mediator::Mediator(const std::string& tracker_type, const std::string& processor_type) 
+    : processor_type_(processor_type) , tracker_type_(tracker_type) {
     if (tracker_type == "mediapipe") {
         hand_tracker_ = std::make_unique<MediaPipeTracker>();
     } else {
         hand_tracker_ = std::make_unique<RTMPoseTracker>();
     }
 
-    if (processor_type == "interpolation") {
+    if (processor_type_ == "shadow") {
+        click_processor_ = std::make_unique<ShadowClickProcessor>();
+    } else if (processor_type_ == "interpolation") {
         click_processor_ = std::make_unique<InterpolationProcessor>();
     } else {
         click_processor_ = std::make_unique<ZeroCrossingProcessor>();
     }
-    
-    // NOTE: physical_click_processor_ is left as nullptr until we implement the 3D classes
 }
 
 Mediator::~Mediator() = default;
@@ -100,6 +101,11 @@ void Mediator::processFrame(const cv::Mat& frame) {
                 latest_physical_hands_ = std::make_shared<std::vector<PhysicalHand>>(std::move(phys_hands));
             }
 
+            if (processor_type_ == "shadow") {
+                auto* shadow_proc = static_cast<ShadowClickProcessor*>(click_processor_.get());
+                shadow_proc->setFrame(frame);
+            }
+
             // 2. Legacy 2D Processing
             click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);
             
@@ -142,6 +148,11 @@ void Mediator::injectCachedHands(std::shared_ptr<const std::vector<HandData>> ca
         {
             std::lock_guard<std::mutex> lock(hands_mutex_);
             latest_physical_hands_ = std::make_shared<std::vector<PhysicalHand>>(std::move(phys_hands));
+        }
+
+        if (processor_type_ == "shadow") {
+            auto* shadow_proc = static_cast<ShadowClickProcessor*>(click_processor_.get());
+            shadow_proc->setFrame(frame);
         }
 
         click_processor_->process(*latest_hands_, virtual_keyboard_, frame.cols, frame.rows);

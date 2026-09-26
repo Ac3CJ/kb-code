@@ -22,6 +22,7 @@
 
 #include "ZeroCrossingProcessor.h"
 #include "InterpolationProcessor.h"
+#include "ShadowClickProcessor.h"
 
 #include "TypingEngine.h"
 #include "KinematicCalibrator.h"
@@ -115,6 +116,9 @@ private:
     void drawHands(cv::Mat& frame);
     
     void drawDebug(cv::Mat& frame);
+
+    std::string processor_type_;
+    std::string tracker_type_;
 
     KeyboardMap virtual_keyboard_;
     

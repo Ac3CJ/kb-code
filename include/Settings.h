@@ -24,8 +24,8 @@ struct Settings {
     std::string window_name = "CV Keyboard";
 
     /// Ablation testing configurations
-    std::string tracker_name = "rtmpose";
-    std::string processor_name = "zero_crossing";
+    std::string tracker_name = "mediapipe";  // Options: "mediapipe", "rtmpose"
+    std::string processor_name = "shadow"; // Options: "shadow", "interpolation", "zero_crossing"
 
     std::string profile_path = "";
 

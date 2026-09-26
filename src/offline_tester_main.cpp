@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
 
     std::string video_path = argv[1];
     std::string tracker = "rtmpose";
-    std::string processor = "zero_crossing";
+    std::string processor = "shadow";
 
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
