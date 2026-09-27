@@ -39,8 +39,8 @@ private:
     const int ROI_OFFSET_X = 0;  
     const int ROI_OFFSET_Y = 20;  
 
-    const int SHADOW_L_THRESH = 100; 
-    const int MOTION_THRESH = 10;    
+    const int SHADOW_L_THRESH = 150;     // Lower checks for darker pixels
+    const int MOTION_THRESH = 10;        // Lower for more sensitivity, higher for less sensitivity
     const int BLUR_SIZE = 31; 
     
     bool show_debug_window_ = true; 

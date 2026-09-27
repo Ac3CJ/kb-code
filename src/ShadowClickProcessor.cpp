@@ -23,7 +23,7 @@ void ShadowClickProcessor::drawDebugWindow(const cv::Mat& roi_bgr, const cv::Mat
     int w = roi_bgr.cols;
     int h = roi_bgr.rows;
 
-    cv::namedWindow(window_names_[hand_idx], cv::WINDOW_NORMAL);
+    cv::namedWindow(window_names_[hand_idx], cv::WINDOW_NORMAL | cv::WINDOW_GUI_NORMAL);
 
     cv::Mat pane1;
     cv::resize(roi_bgr, pane1, cv::Size(w * scale, h * scale), 0, 0, cv::INTER_NEAREST);
@@ -202,7 +202,7 @@ void ShadowClickProcessor::detectClicks(const std::vector<HandData>& hands,
             if (!debug_rendered_this_frame[i]) {
                 cv::Mat blank = cv::Mat::zeros(cv::Size(ROI_WIDTH * 10 * 3, ROI_HEIGHT * 10), CV_8UC3);
                 cv::putText(blank, "WAITING FOR TARGET FINGER...", cv::Point(50, (ROI_HEIGHT * 10) / 2), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 255), 2);
-                cv::namedWindow(window_names_[i], cv::WINDOW_NORMAL); 
+                cv::namedWindow(window_names_[i], cv::WINDOW_NORMAL | cv::WINDOW_GUI_NORMAL); 
                 cv::imshow(window_names_[i], blank);
             }
         }

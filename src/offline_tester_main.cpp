@@ -19,7 +19,7 @@ public:
                   const std::string& processor_name) 
         : video_path_(video_path), mediator_(tracker_name, processor_name) {
         
-        cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
+        cv::namedWindow(window_name_, cv::WINDOW_NORMAL | cv::WINDOW_GUI_NORMAL);
         cv::setMouseCallback(window_name_, onMouse, this);
 
         // Parse the user's custom naming convention (e.g., w_sh_test1.mp4)
