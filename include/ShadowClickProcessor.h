@@ -17,6 +17,7 @@ public:
     ~ShadowClickProcessor() override = default;
 
     void setFrame(const cv::Mat& bgr_frame) { current_bgr_ = bgr_frame; }
+    void cycleDebugFinger(int hand_idx, int direction); // UPDATED
 
 protected:
     void detectClicks(const std::vector<HandData>& hands, 
@@ -33,20 +34,22 @@ private:
     enum class StrikeState { IDLE, CONVERGING };
     std::map<int, StrikeState> finger_states_;
 
-    // Configurable ROI sizing and positioning
     const int ROI_WIDTH = 150;
     const int ROI_HEIGHT = 75;
     const int ROI_OFFSET_X = 0;  
     const int ROI_OFFSET_Y = 20;  
 
-    // Configurable filter thresholds
     const int SHADOW_L_THRESH = 100; 
     const int MOTION_THRESH = 10;    
-    const int BLUR_SIZE = 31; // NEW: Gaussian blur kernel size (must be odd)
+    const int BLUR_SIZE = 31; 
     
-    // Debug Visualizer variables
     bool show_debug_window_ = true; 
-    void drawDebugWindow(const cv::Mat& roi_bgr, const cv::Mat& diff_mask, const cv::Mat& combined_mask, const cv::Mat& flow, const cv::Point2f& true_center);
+    
+    // NEW: Two independent state trackers (Index 0 = Hand 1, Index 1 = Hand 2)
+    int debug_finger_idx_[2] = {1, 1}; // Default both to Index Finger
+    std::string window_names_[2] = {"Shadow Diagnostics (Hand 1)", "Shadow Diagnostics (Hand 2)"};
+    
+    void drawDebugWindow(const cv::Mat& roi_bgr, const cv::Mat& diff_mask, const cv::Mat& combined_mask, const cv::Mat& flow, const cv::Point2f& true_center, int hand_idx);
 };
 
 } // namespace cv_keyboard

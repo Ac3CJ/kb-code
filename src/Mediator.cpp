@@ -179,6 +179,15 @@ void Mediator::updateCameraIntrinsics(CameraSource source) {
     virtual_keyboard_.updateCameraIntrinsics(source);
 }
 
+// ========================================= DEBUGGING AND RENDERING =========================================
+
+void Mediator::cycleDebugFinger(int hand_idx, int direction) {
+    if (processor_type_ == "shadow" && click_processor_) {
+        auto* shadow_proc = static_cast<ShadowClickProcessor*>(click_processor_.get());
+        shadow_proc->cycleDebugFinger(hand_idx, direction);
+    }
+}
+
 void Mediator::drawGrid(cv::Mat& frame, int step) const {
     if (cached_grid_overlay_.empty() || last_frame_size_ != frame.size()) {
         last_frame_size_ = frame.size();

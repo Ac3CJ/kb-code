@@ -192,7 +192,7 @@ public:
 
             cv::imshow(window_name_, zoomed_frame);
 
-            int key = cv::waitKey(is_paused ? 30 : 16); 
+            int key = cv::waitKeyEx(is_paused ? 30 : 16); 
             
             if (key == 27) { // ESC
                 break;
@@ -246,6 +246,26 @@ public:
             } else if (key == 'f' || key == 'F') { // Replaced '7' with 'F'
                 mediator_.cycleFilterMode();
                 std::cout << "[Application] Changing Filter (Read Window)\n";
+                force_process = true;
+            } else if (key == '9') { 
+                // '9' Key -> Hand 1 Left
+                std::cout << "[Application] Changing Finger (Hand 1 Left)\n";
+                mediator_.cycleDebugFinger(0, -1);
+                force_process = true;
+            } else if (key == '0') {
+                // '0' Key -> Hand 1 Right
+                std::cout << "[Application] Changing Finger (Hand 1 Right)\n";
+                mediator_.cycleDebugFinger(0, 1);
+                force_process = true;
+            } else if (key == '-') { 
+                // '-' Key -> Hand 2 Left
+                std::cout << "[Application] Changing Finger (Hand 2 Left)\n";
+                mediator_.cycleDebugFinger(1, -1);
+                force_process = true;
+            } else if (key == '=') {
+                // '=' Key -> Hand 2 Right
+                std::cout << "[Application] Changing Finger (Hand 2 Right)\n";
+                mediator_.cycleDebugFinger(1, 1);
                 force_process = true;
             }
         }

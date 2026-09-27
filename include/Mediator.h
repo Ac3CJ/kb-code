@@ -87,6 +87,8 @@ public:
         else filter_mode_ = FilterMode::NONE; 
     }
 
+    void cycleDebugFinger(int hand_idx, int direction);
+
     const PerformanceMetrics& getMetrics() const { return metrics_; }
 
     bool showGrid() const { return show_grid_; }
