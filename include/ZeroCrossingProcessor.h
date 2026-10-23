@@ -13,6 +13,11 @@ public:
     ~ZeroCrossingProcessor() override = default;
 
 protected:
+    // TUNABLE PARAMETERS (Normalized pixel velocity per frame)
+    // Adjust these to filter out slow hovering movements
+    const float STRIKE_THRESH = 0.0015f; 
+    const float RELEASE_THRESH = 0.0000015f;
+
     void detectClicks(const std::vector<HandData>& hands, 
                       const KeyboardMap& keyboard_map, 
                       int frame_width, 

@@ -119,3 +119,27 @@ cc_binary(
         "-lopencv_dnn",
     ],
 )
+
+# ==============================================================================
+# THE DATA ANNOTATION SUITE (For labeling new datasets)
+# ==============================================================================
+cc_binary(
+    name = "annotation_suite",
+    srcs = [
+        "src/AnnotationSuite.cpp",
+        "include/AnnotationSuite.h",
+    ],
+    includes = ["include"],
+    deps = [
+        ":cv_keyboard_core", 
+    ],
+    linkopts = [
+        "-lopencv_core",
+        "-lopencv_imgproc",
+        "-lopencv_highgui",
+        "-lopencv_video",
+        "-lopencv_aruco",
+        "-lopencv_calib3d",
+        "-lopencv_dnn",
+    ],
+)

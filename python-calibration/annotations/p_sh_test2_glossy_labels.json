@@ -1,0 +1,15 @@
+{
+    "video_file": "p_sh_test2_glossy.mp4",
+    "video_hash": "caa1f03ede21f74a",
+    "status": "in_progress",
+    "camera_type": "Phone",
+    "fps": 30.0,
+    "frame_width": 1920,
+    "frame_height": 1080,
+    "total_frames": 626,
+    "lighting": "overhead",
+    "surface": "matte_light",
+    "expected_transcript": "",
+    "candidates": [
+    ]
+}

@@ -8,11 +8,6 @@ void ZeroCrossingProcessor::detectClicks(const std::vector<HandData>& hands,
                                          const KeyboardMap& keyboard_map, 
                                          int frame_width, 
                                          int frame_height) {
-                            
-    // TUNABLE PARAMETERS (Normalized pixel velocity per frame)
-    // Adjust these to filter out slow hovering movements
-    const float STRIKE_THRESH = 0.0015f; 
-    const float RELEASE_THRESH = 0.0000015f;
 
     for (const auto& hand : hands) {
         for (int tip_idx : FINGER_TIP_INDICES) {
