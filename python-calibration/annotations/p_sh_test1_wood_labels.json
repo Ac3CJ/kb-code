@@ -11,5 +11,393 @@
     "surface": "matte_light",
     "expected_transcript": "",
     "candidates": [
+        {
+            "finger_id": 0,
+            "start_frame": 28,
+            "end_frame": 104,
+            "peak_frame": 36,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 23,
+            "end_frame": 102,
+            "peak_frame": 31,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "N",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 50,
+            "end_frame": 66,
+            "peak_frame": 58,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "N",
+            "anchors": [
+                {
+                    "impact_frame": 58,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 959,
+                    "py": 528,
+                    "roi_x": 884,
+                    "roi_y": 511,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 59,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 962,
+                    "py": 530,
+                    "roi_x": 887,
+                    "roi_y": 513,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 60,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 972,
+                    "py": 541,
+                    "roi_x": 897,
+                    "roi_y": 524,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "B"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 53,
+            "end_frame": 69,
+            "peak_frame": 61,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "B",
+            "anchors": [
+                {
+                    "impact_frame": 61,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 978,
+                    "py": 560,
+                    "roi_x": 903,
+                    "roi_y": 543,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "B"
+                },
+                {
+                    "impact_frame": 60,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 972,
+                    "py": 541,
+                    "roi_x": 897,
+                    "roi_y": 524,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "B"
+                },
+                {
+                    "impact_frame": 63,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 978,
+                    "py": 564,
+                    "roi_x": 903,
+                    "roi_y": 547,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "H"
+                }
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 25,
+            "end_frame": 104,
+            "peak_frame": 33,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 70,
+            "end_frame": 86,
+            "peak_frame": 78,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+                {
+                    "impact_frame": 78,
+                    "label": 1,
+                    "finger_id": 2,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 0,
+                    "key_id": "TRACKER_FAILED"
+                },
+                {
+                    "impact_frame": 77,
+                    "label": 0,
+                    "finger_id": 2,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 1,
+                    "key_id": "TRACKER_FAILED"
+                },
+                {
+                    "impact_frame": 79,
+                    "label": 0,
+                    "finger_id": 2,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 1,
+                    "key_id": "TRACKER_FAILED"
+                },
+                {
+                    "impact_frame": 80,
+                    "label": 0,
+                    "finger_id": 2,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 1,
+                    "key_id": "TRACKER_FAILED"
+                }
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 27,
+            "end_frame": 104,
+            "peak_frame": 35,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_AltGr",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 28,
+            "end_frame": 104,
+            "peak_frame": 38,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_Shift",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 52,
+            "end_frame": 68,
+            "peak_frame": 60,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "R_Shift",
+            "anchors": [
+                {
+                    "impact_frame": 60,
+                    "label": 0,
+                    "finger_id": 4,
+                    "px": 573,
+                    "py": 561,
+                    "roi_x": 498,
+                    "roi_y": 544,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "R_Shift"
+                },
+                {
+                    "impact_frame": 61,
+                    "label": 0,
+                    "finger_id": 4,
+                    "px": 575,
+                    "py": 557,
+                    "roi_x": 500,
+                    "roi_y": 540,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "R_Shift"
+                },
+                {
+                    "impact_frame": 62,
+                    "label": 0,
+                    "finger_id": 4,
+                    "px": 576,
+                    "py": 555,
+                    "roi_x": 501,
+                    "roi_y": 538,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "R_Shift"
+                },
+                {
+                    "impact_frame": 63,
+                    "label": 0,
+                    "finger_id": 4,
+                    "px": 577,
+                    "py": 549,
+                    "roi_x": 502,
+                    "roi_y": 532,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "R_Shift"
+                }
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 28,
+            "end_frame": 73,
+            "peak_frame": 37,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 51,
+            "end_frame": 73,
+            "peak_frame": 59,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Alt",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 62,
+            "end_frame": 78,
+            "peak_frame": 70,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+                {
+                    "impact_frame": 70,
+                    "label": 1,
+                    "finger_id": 6,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 0,
+                    "key_id": "TRACKER_FAILED"
+                },
+                {
+                    "impact_frame": 72,
+                    "label": 1,
+                    "finger_id": 6,
+                    "px": -1,
+                    "py": -1,
+                    "roi_x": 0,
+                    "roi_y": 0,
+                    "roi_w": 0,
+                    "roi_h": 0,
+                    "heuristic_triggered": 1,
+                    "key_id": "TRACKER_FAILED"
+                }
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 26,
+            "end_frame": 73,
+            "peak_frame": 34,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Backslash",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 27,
+            "end_frame": 73,
+            "peak_frame": 35,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Caps",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 28,
+            "end_frame": 72,
+            "peak_frame": 40,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        }
     ]
 }

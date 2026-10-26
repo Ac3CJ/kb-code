@@ -1,0 +1,1769 @@
+{
+    "video_file": "p_sh_test4_glossy.mp4",
+    "video_hash": "25d8cec1b19a4f97",
+    "status": "in_progress",
+    "camera_type": "Phone",
+    "fps": 30.0,
+    "frame_width": 1920,
+    "frame_height": 1080,
+    "total_frames": 858,
+    "lighting": "dynamic_exposure",
+    "surface": "matte_light",
+    "expected_transcript": "",
+    "candidates": [
+        {
+            "finger_id": 0,
+            "start_frame": 0,
+            "end_frame": 568,
+            "peak_frame": 3,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Option",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 0,
+            "start_frame": 619,
+            "end_frame": 767,
+            "peak_frame": 627,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 0,
+            "start_frame": 780,
+            "end_frame": 797,
+            "peak_frame": 788,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 0,
+            "end_frame": 573,
+            "peak_frame": 2,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 31,
+            "end_frame": 47,
+            "peak_frame": 39,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 39,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 852,
+                    "py": 479,
+                    "roi_x": 777,
+                    "roi_y": 462,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 40,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 859,
+                    "py": 481,
+                    "roi_x": 784,
+                    "roi_y": 464,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 41,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 862,
+                    "py": 482,
+                    "roi_x": 787,
+                    "roi_y": 465,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 42,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 855,
+                    "py": 498,
+                    "roi_x": 780,
+                    "roi_y": 481,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 43,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 854,
+                    "py": 515,
+                    "roi_x": 779,
+                    "roi_y": 498,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "M"
+                },
+                {
+                    "impact_frame": 44,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 853,
+                    "py": 515,
+                    "roi_x": 778,
+                    "roi_y": 498,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "M"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 36,
+            "end_frame": 52,
+            "peak_frame": 44,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "M",
+            "anchors": [
+                {
+                    "impact_frame": 44,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 853,
+                    "py": 515,
+                    "roi_x": 778,
+                    "roi_y": 498,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "M"
+                },
+                {
+                    "impact_frame": 46,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 851,
+                    "py": 505,
+                    "roi_x": 776,
+                    "roi_y": 488,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "M"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 49,
+            "end_frame": 65,
+            "peak_frame": 57,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 57,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 859,
+                    "py": 488,
+                    "roi_x": 784,
+                    "roi_y": 471,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 56,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 865,
+                    "py": 477,
+                    "roi_x": 790,
+                    "roi_y": 460,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 59,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 853,
+                    "py": 478,
+                    "roi_x": 778,
+                    "roi_y": 461,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 65,
+            "end_frame": 81,
+            "peak_frame": 73,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 73,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 793,
+                    "py": 498,
+                    "roi_x": 718,
+                    "roi_y": 481,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 74,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 800,
+                    "py": 498,
+                    "roi_x": 725,
+                    "roi_y": 481,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 75,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 812,
+                    "py": 495,
+                    "roi_x": 737,
+                    "roi_y": 478,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 76,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 831,
+                    "py": 490,
+                    "roi_x": 756,
+                    "roi_y": 473,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 77,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 837,
+                    "py": 493,
+                    "roi_x": 762,
+                    "roi_y": 476,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 72,
+            "end_frame": 88,
+            "peak_frame": 80,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "M",
+            "anchors": [
+                {
+                    "impact_frame": 80,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 839,
+                    "py": 518,
+                    "roi_x": 764,
+                    "roi_y": 501,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "M"
+                },
+                {
+                    "impact_frame": 81,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 828,
+                    "py": 510,
+                    "roi_x": 753,
+                    "roi_y": 493,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "M"
+                },
+                {
+                    "impact_frame": 82,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 807,
+                    "py": 496,
+                    "roi_x": 732,
+                    "roi_y": 479,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 128,
+            "end_frame": 144,
+            "peak_frame": 136,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 136,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 896,
+                    "py": 483,
+                    "roi_x": 821,
+                    "roi_y": 466,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 137,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 910,
+                    "py": 481,
+                    "roi_x": 835,
+                    "roi_y": 464,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 138,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 917,
+                    "py": 486,
+                    "roi_x": 842,
+                    "roi_y": 469,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 139,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 919,
+                    "py": 489,
+                    "roi_x": 844,
+                    "roi_y": 472,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 140,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 920,
+                    "py": 499,
+                    "roi_x": 845,
+                    "roi_y": 482,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 136,
+            "end_frame": 152,
+            "peak_frame": 144,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "N",
+            "anchors": [
+                {
+                    "impact_frame": 144,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 913,
+                    "py": 520,
+                    "roi_x": 838,
+                    "roi_y": 503,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 145,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 913,
+                    "py": 520,
+                    "roi_x": 838,
+                    "roi_y": 503,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 146,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 917,
+                    "py": 520,
+                    "roi_x": 842,
+                    "roi_y": 503,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 147,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 918,
+                    "py": 520,
+                    "roi_x": 843,
+                    "roi_y": 503,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 148,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 920,
+                    "py": 523,
+                    "roi_x": 845,
+                    "roi_y": 506,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 149,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 921,
+                    "py": 527,
+                    "roi_x": 846,
+                    "roi_y": 510,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 150,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 922,
+                    "py": 529,
+                    "roi_x": 847,
+                    "roi_y": 512,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 151,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 922,
+                    "py": 530,
+                    "roi_x": 847,
+                    "roi_y": 513,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "J"
+                },
+                {
+                    "impact_frame": 152,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 924,
+                    "py": 530,
+                    "roi_x": 849,
+                    "roi_y": 513,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "J"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 159,
+            "end_frame": 175,
+            "peak_frame": 167,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Y",
+            "anchors": [
+                {
+                    "impact_frame": 167,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 985,
+                    "py": 573,
+                    "roi_x": 910,
+                    "roi_y": 556,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Y"
+                },
+                {
+                    "impact_frame": 169,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 981,
+                    "py": 544,
+                    "roi_x": 906,
+                    "roi_y": 527,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "H"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 171,
+            "end_frame": 187,
+            "peak_frame": 179,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 179,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 884,
+                    "py": 486,
+                    "roi_x": 809,
+                    "roi_y": 469,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 177,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 889,
+                    "py": 486,
+                    "roi_x": 814,
+                    "roi_y": 469,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 176,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 891,
+                    "py": 467,
+                    "roi_x": 816,
+                    "roi_y": 450,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 180,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 875,
+                    "py": 469,
+                    "roi_x": 800,
+                    "roi_y": 452,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 240,
+            "end_frame": 256,
+            "peak_frame": 248,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 248,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 846,
+                    "py": 492,
+                    "roi_x": 771,
+                    "roi_y": 475,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 250,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 835,
+                    "py": 475,
+                    "roi_x": 760,
+                    "roi_y": 458,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 282,
+            "end_frame": 298,
+            "peak_frame": 290,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Fn",
+            "anchors": [
+                {
+                    "impact_frame": 290,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 628,
+                    "py": 502,
+                    "roi_x": 553,
+                    "roi_y": 485,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 291,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 632,
+                    "py": 505,
+                    "roi_x": 557,
+                    "roi_y": 488,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 292,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 639,
+                    "py": 507,
+                    "roi_x": 564,
+                    "roi_y": 490,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 293,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 644,
+                    "py": 512,
+                    "roi_x": 569,
+                    "roi_y": 495,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                },
+                {
+                    "impact_frame": 294,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 650,
+                    "py": 514,
+                    "roi_x": 575,
+                    "roi_y": 497,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                },
+                {
+                    "impact_frame": 295,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 656,
+                    "py": 515,
+                    "roi_x": 581,
+                    "roi_y": 498,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                },
+                {
+                    "impact_frame": 296,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 657,
+                    "py": 514,
+                    "roi_x": 582,
+                    "roi_y": 497,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                },
+                {
+                    "impact_frame": 297,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 658,
+                    "py": 514,
+                    "roi_x": 583,
+                    "roi_y": 497,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                },
+                {
+                    "impact_frame": 298,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 658,
+                    "py": 513,
+                    "roi_x": 583,
+                    "roi_y": 496,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 305,
+            "end_frame": 321,
+            "peak_frame": 313,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": ";",
+            "anchors": [
+                {
+                    "impact_frame": 313,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 678,
+                    "py": 546,
+                    "roi_x": 603,
+                    "roi_y": 529,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": ";"
+                },
+                {
+                    "impact_frame": 315,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 677,
+                    "py": 532,
+                    "roi_x": 602,
+                    "roi_y": 515,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "/"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 320,
+            "end_frame": 336,
+            "peak_frame": 328,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+                {
+                    "impact_frame": 328,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 862,
+                    "py": 482,
+                    "roi_x": 787,
+                    "roi_y": 465,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 330,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 856,
+                    "py": 473,
+                    "roi_x": 781,
+                    "roi_y": 456,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 408,
+            "end_frame": 424,
+            "peak_frame": 416,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": ".",
+            "anchors": [
+                {
+                    "impact_frame": 416,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 750,
+                    "py": 534,
+                    "roi_x": 675,
+                    "roi_y": 517,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "."
+                },
+                {
+                    "impact_frame": 414,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 751,
+                    "py": 534,
+                    "roi_x": 676,
+                    "roi_y": 517,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                },
+                {
+                    "impact_frame": 405,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 749,
+                    "py": 510,
+                    "roi_x": 674,
+                    "roi_y": 493,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                },
+                {
+                    "impact_frame": 406,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 1200,
+                    "py": 434,
+                    "roi_x": 1125,
+                    "roi_y": 417,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                },
+                {
+                    "impact_frame": 407,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 1201,
+                    "py": 433,
+                    "roi_x": 1126,
+                    "roi_y": 416,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 438,
+            "end_frame": 454,
+            "peak_frame": 446,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "D",
+            "anchors": [
+                {
+                    "impact_frame": 446,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 1181,
+                    "py": 525,
+                    "roi_x": 1106,
+                    "roi_y": 508,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "D"
+                },
+                {
+                    "impact_frame": 444,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 1178,
+                    "py": 532,
+                    "roi_x": 1103,
+                    "roi_y": 515,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "D"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 518,
+            "end_frame": 534,
+            "peak_frame": 526,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "N",
+            "anchors": [
+                {
+                    "impact_frame": 526,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 920,
+                    "py": 509,
+                    "roi_x": 845,
+                    "roi_y": 492,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "N"
+                },
+                {
+                    "impact_frame": 527,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 920,
+                    "py": 490,
+                    "roi_x": 845,
+                    "roi_y": 473,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                },
+                {
+                    "impact_frame": 528,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 907,
+                    "py": 475,
+                    "roi_x": 832,
+                    "roi_y": 458,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Space"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 544,
+            "end_frame": 560,
+            "peak_frame": 552,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "-",
+            "anchors": [
+                {
+                    "impact_frame": 552,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 631,
+                    "py": 626,
+                    "roi_x": 556,
+                    "roi_y": 609,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "-"
+                },
+                {
+                    "impact_frame": 554,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 629,
+                    "py": 605,
+                    "roi_x": 554,
+                    "roi_y": 588,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "-"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 608,
+            "end_frame": 675,
+            "peak_frame": 616,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_AltGr",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 629,
+            "end_frame": 645,
+            "peak_frame": 637,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "R_AltGr",
+            "anchors": [
+                {
+                    "impact_frame": 637,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 735,
+                    "py": 497,
+                    "roi_x": 660,
+                    "roi_y": 480,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "R_AltGr"
+                },
+                {
+                    "impact_frame": 638,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 735,
+                    "py": 496,
+                    "roi_x": 660,
+                    "roi_y": 479,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "R_AltGr"
+                },
+                {
+                    "impact_frame": 639,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 732,
+                    "py": 499,
+                    "roi_x": 657,
+                    "roi_y": 482,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "R_AltGr"
+                },
+                {
+                    "impact_frame": 640,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 730,
+                    "py": 505,
+                    "roi_x": 655,
+                    "roi_y": 488,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 645,
+            "end_frame": 661,
+            "peak_frame": 653,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "L",
+            "anchors": [
+                {
+                    "impact_frame": 653,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 741,
+                    "py": 541,
+                    "roi_x": 666,
+                    "roi_y": 524,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "L"
+                },
+                {
+                    "impact_frame": 652,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 744,
+                    "py": 532,
+                    "roi_x": 669,
+                    "roi_y": 515,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "L"
+                },
+                {
+                    "impact_frame": 655,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 740,
+                    "py": 539,
+                    "roi_x": 665,
+                    "roi_y": 522,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "L"
+                },
+                {
+                    "impact_frame": 657,
+                    "label": 1,
+                    "finger_id": 1,
+                    "px": 737,
+                    "py": 537,
+                    "roi_x": 662,
+                    "roi_y": 520,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "L"
+                },
+                {
+                    "impact_frame": 658,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 733,
+                    "py": 527,
+                    "roi_x": 658,
+                    "roi_y": 510,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "."
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 680,
+            "end_frame": 754,
+            "peak_frame": 688,
+            "state": 1,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "Fn",
+            "anchors": [
+                {
+                    "impact_frame": 688,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 650,
+                    "py": 501,
+                    "roi_x": 575,
+                    "roi_y": 484,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 689,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 646,
+                    "py": 499,
+                    "roi_x": 571,
+                    "roi_y": 482,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 690,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 640,
+                    "py": 499,
+                    "roi_x": 565,
+                    "roi_y": 482,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 691,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 639,
+                    "py": 494,
+                    "roi_x": 564,
+                    "roi_y": 477,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 690,
+            "end_frame": 706,
+            "peak_frame": 698,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Fn",
+            "anchors": [
+                {
+                    "impact_frame": 698,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 639,
+                    "py": 486,
+                    "roi_x": 564,
+                    "roi_y": 469,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 699,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 636,
+                    "py": 489,
+                    "roi_x": 561,
+                    "roi_y": 472,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 700,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 631,
+                    "py": 490,
+                    "roi_x": 556,
+                    "roi_y": 473,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Fn"
+                },
+                {
+                    "impact_frame": 701,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 619,
+                    "py": 491,
+                    "roi_x": 544,
+                    "roi_y": 474,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Option"
+                },
+                {
+                    "impact_frame": 702,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 599,
+                    "py": 491,
+                    "roi_x": 524,
+                    "roi_y": 474,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Option"
+                },
+                {
+                    "impact_frame": 711,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 573,
+                    "py": 491,
+                    "roi_x": 498,
+                    "roi_y": 474,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 1,
+                    "key_id": "Option"
+                }
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 704,
+            "end_frame": 720,
+            "peak_frame": 712,
+            "state": 1,
+            "trig_shadow": 0,
+            "trig_kinematic": 0,
+            "suggested_key": "Option",
+            "anchors": [
+                {
+                    "impact_frame": 712,
+                    "label": 0,
+                    "finger_id": 1,
+                    "px": 587,
+                    "py": 490,
+                    "roi_x": 512,
+                    "roi_y": 473,
+                    "roi_w": 150,
+                    "roi_h": 75,
+                    "heuristic_triggered": 0,
+                    "key_id": "Option"
+                }
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 0,
+            "end_frame": 491,
+            "peak_frame": 5,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_AltGr",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 518,
+            "end_frame": 581,
+            "peak_frame": 526,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 0,
+            "end_frame": 494,
+            "peak_frame": 5,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 518,
+            "end_frame": 581,
+            "peak_frame": 526,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 0,
+            "end_frame": 142,
+            "peak_frame": 5,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_Ctrl",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 159,
+            "end_frame": 483,
+            "peak_frame": 167,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Bracket",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 519,
+            "end_frame": 586,
+            "peak_frame": 527,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "R_Shift",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 0,
+            "end_frame": 85,
+            "peak_frame": 4,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 98,
+            "end_frame": 393,
+            "peak_frame": 106,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 414,
+            "end_frame": 432,
+            "peak_frame": 422,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 458,
+            "end_frame": 579,
+            "peak_frame": 466,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 596,
+            "end_frame": 620,
+            "peak_frame": 604,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 0,
+            "end_frame": 431,
+            "peak_frame": 4,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 461,
+            "end_frame": 579,
+            "peak_frame": 469,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "W",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 593,
+            "end_frame": 620,
+            "peak_frame": 601,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "S",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 0,
+            "end_frame": 437,
+            "peak_frame": 6,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Win",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 460,
+            "end_frame": 538,
+            "peak_frame": 468,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Q",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 549,
+            "end_frame": 620,
+            "peak_frame": 557,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "A",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 0,
+            "end_frame": 402,
+            "peak_frame": 4,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Shift",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 414,
+            "end_frame": 437,
+            "peak_frame": 422,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 461,
+            "end_frame": 581,
+            "peak_frame": 469,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Win",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 596,
+            "end_frame": 620,
+            "peak_frame": 604,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "Caps",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 0,
+            "end_frame": 431,
+            "peak_frame": 6,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Ctrl",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 447,
+            "end_frame": 490,
+            "peak_frame": 455,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 507,
+            "end_frame": 581,
+            "peak_frame": 515,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Ctrl",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 593,
+            "end_frame": 620,
+            "peak_frame": 601,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        }
+    ]
+}

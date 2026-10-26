@@ -60,14 +60,30 @@ static std::string fingerIdToName(int finger_id) {
 }
 
 static std::string sanitizeKeyString(const std::string& key) {
+    // 1. Explicitly map known problematic symbols to safe text
     if (key == "'") return "Apostrophe";
     if (key == "\"") return "Double_Quote";
     if (key == "\\") return "Backslash";
+    if (key == "[") return "L_Bracket";
+    if (key == "]") return "R_Bracket";
+    if (key == "{") return "L_Brace";
+    if (key == "}") return "R_Brace";
+    if (key == ",") return "Comma";
+    if (key == ":") return "Colon";
+    if (key == "/") return "Slash";
+    if (key == "-") return "Hyphen";
     
     std::string safe = key;
-    // Strip any rogue unescaped quotes that would break cv::FileStorage JSON
-    safe.erase(std::remove(safe.begin(), safe.end(), '\''), safe.end());
-    safe.erase(std::remove(safe.begin(), safe.end(), '\"'), safe.end());
+    
+    // 2. Strip any remaining rogue characters that break cv::FileStorage's lexer
+    // Added: \\ (was missing in your bad_chars), :, /, -, space, and control characters (< 0x20)
+    const std::string bad_chars = "\'\"\\/[]{},: -";
+    safe.erase(std::remove_if(safe.begin(), safe.end(), 
+        [&bad_chars](unsigned char c) { 
+            return c < 0x20 || c == 0x7F || bad_chars.find(static_cast<char>(c)) != std::string::npos; 
+        }), 
+        safe.end());
+        
     return safe.empty() ? "NONE" : safe;
 }
 

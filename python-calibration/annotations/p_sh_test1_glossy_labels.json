@@ -7,8 +7,8 @@
     "frame_width": 1920,
     "frame_height": 1080,
     "total_frames": 311,
-    "lighting": "overhead",
-    "surface": "matte_light",
+    "lighting": "diffuse",
+    "surface": "glossy",
     "expected_transcript": "",
     "candidates": [
         {
@@ -337,7 +337,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": ","
+                    "key_id": "Comma"
                 },
                 {
                     "impact_frame": 84,

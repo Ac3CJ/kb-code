@@ -1,0 +1,15 @@
+{
+    "video_file": "p_sh_test3_wood.mp4",
+    "video_hash": "0a0932ce33334c75",
+    "status": "in_progress",
+    "camera_type": "Phone",
+    "fps": 30.0,
+    "frame_width": 1920,
+    "frame_height": 1080,
+    "total_frames": 734,
+    "lighting": "overhead",
+    "surface": "matte_light",
+    "expected_transcript": "",
+    "candidates": [
+    ]
+}

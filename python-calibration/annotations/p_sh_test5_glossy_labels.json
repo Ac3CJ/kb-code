@@ -1,0 +1,135 @@
+{
+    "video_file": "p_sh_test5_glossy.mp4",
+    "video_hash": "14b6476f5ece749f",
+    "status": "in_progress",
+    "camera_type": "Phone",
+    "fps": 30.0,
+    "frame_width": 1920,
+    "frame_height": 1080,
+    "total_frames": 911,
+    "lighting": "overhead",
+    "surface": "matte_light",
+    "expected_transcript": "",
+    "candidates": [
+        {
+            "finger_id": 0,
+            "start_frame": 0,
+            "end_frame": 41,
+            "peak_frame": 4,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "#",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 0,
+            "end_frame": 41,
+            "peak_frame": 2,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 0,
+            "end_frame": 41,
+            "peak_frame": 5,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_Bracket",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 0,
+            "end_frame": 37,
+            "peak_frame": 5,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 0,
+            "end_frame": 41,
+            "peak_frame": 1,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 1,
+            "end_frame": 36,
+            "peak_frame": 9,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 0,
+            "end_frame": 39,
+            "peak_frame": 8,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 11,
+            "end_frame": 33,
+            "peak_frame": 19,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 8,
+            "end_frame": 41,
+            "peak_frame": 16,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Ctrl",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 8,
+            "end_frame": 41,
+            "peak_frame": 16,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        }
+    ]
+}
