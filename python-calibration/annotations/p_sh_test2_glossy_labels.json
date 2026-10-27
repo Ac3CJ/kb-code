@@ -2548,7 +2548,7 @@
             "state": 1,
             "trig_shadow": 0,
             "trig_kinematic": 0,
-            "suggested_key": "/",
+            "suggested_key": "Slash",
             "anchors": [
                 {
                     "impact_frame": 520,
@@ -2561,7 +2561,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 0,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 521,
@@ -2574,7 +2574,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 522,
@@ -2587,7 +2587,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 523,
@@ -3072,7 +3072,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 291,
@@ -3085,7 +3085,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 292,
@@ -3098,7 +3098,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 293,
@@ -3111,7 +3111,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 294,
@@ -3124,7 +3124,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 295,
@@ -3137,7 +3137,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 }
             ]
         },
@@ -3842,7 +3842,7 @@
             "state": 1,
             "trig_shadow": 0,
             "trig_kinematic": 0,
-            "suggested_key": "/",
+            "suggested_key": "Slash",
             "anchors": [
                 {
                     "impact_frame": 65,
@@ -3855,7 +3855,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 0,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 66,
@@ -3868,7 +3868,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 67,
@@ -3881,7 +3881,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 68,
@@ -3894,7 +3894,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 64,
@@ -3907,7 +3907,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 }
             ]
         },
@@ -3919,7 +3919,7 @@
             "state": 1,
             "trig_shadow": 0,
             "trig_kinematic": 0,
-            "suggested_key": "/",
+            "suggested_key": "Slash",
             "anchors": [
                 {
                     "impact_frame": 196,
@@ -3932,7 +3932,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 0,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 197,
@@ -3945,7 +3945,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 198,
@@ -3958,7 +3958,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 194,
@@ -3984,7 +3984,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 }
             ]
         },
@@ -4679,7 +4679,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 484,

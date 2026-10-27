@@ -2432,7 +2432,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 699,
@@ -2445,7 +2445,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 700,
@@ -2458,7 +2458,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 701,
@@ -2636,7 +2636,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 212,
@@ -2649,7 +2649,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 217,
@@ -2880,7 +2880,7 @@
             "state": 1,
             "trig_shadow": 0,
             "trig_kinematic": 0,
-            "suggested_key": "/",
+            "suggested_key": "Slash",
             "anchors": [
                 {
                     "impact_frame": 334,
@@ -2893,7 +2893,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 0,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 335,

@@ -16,6 +16,45 @@ namespace cv_keyboard {
 // INTERNAL HELPER FUNCTIONS
 // ============================================================================
 
+class IInspectableClickProcessor {
+public:
+    virtual ~IInspectableClickProcessor() = default;
+    virtual void setFrameIfNeeded(const cv::Mat& /*frame*/) {}
+    virtual void process(const std::vector<HandData>& hands,
+                         const KeyboardMap& keyboard_map,
+                         int frame_width,
+                         int frame_height) = 0;
+    virtual const std::map<int, std::string>& activeClicks() const = 0;
+};
+
+template <typename ProcT, bool IsShadow = false>
+class InspectableClickProcessor final : public ProcT, public IInspectableClickProcessor {
+public:
+    void setFrameIfNeeded(const cv::Mat& frame) override {
+        if constexpr (IsShadow) {
+            this->setFrame(frame);
+        }
+    }
+    void process(const std::vector<HandData>& hands,
+                 const KeyboardMap& keyboard_map,
+                 int frame_width,
+                 int frame_height) override {
+        ProcT::process(hands, keyboard_map, frame_width, frame_height);
+    }
+    const std::map<int, std::string>& activeClicks() const override {
+        return this->active_clicks_;
+    }
+};
+
+std::unique_ptr<IInspectableClickProcessor> createInspectableProcessor(const std::string& name) {
+    if (name == "shadow") {
+        return std::make_unique<InspectableClickProcessor<ShadowClickProcessor, true>>();
+    } else if (name == "interpolation") {
+        return std::make_unique<InspectableClickProcessor<InterpolationProcessor, false>>();
+    }
+    return std::make_unique<InspectableClickProcessor<ZeroCrossingProcessor, false>>();
+}
+
 static std::string computeFastVideoHash(const fs::path& filepath) {
     if (!fs::exists(filepath)) return "MISSING";
     uint64_t hash = 14695981039346656037ULL;
@@ -290,6 +329,11 @@ void AnnotationSuite::run() {
         } else if (key == 'p' || key == 'P') {
             is_paused = true;
             runFullVideoCascadePreScan();
+            saveCurrentSessionJSON();
+            force_redraw = true;
+        } else if (key == 'f' || key == 'F') {
+            is_paused = true;
+            autoFillClickProcessorNegatives();
             saveCurrentSessionJSON();
             force_redraw = true;
         } else if (key == 'g' || key == 'G') {
@@ -992,6 +1036,163 @@ void AnnotationSuite::cycleSurfaceTag() {
     status_banner_ = "Surface tag set to: " + cur;
 }
 
+void AnnotationSuite::autoFillClickProcessorNegatives() {
+    if (!cap_.isOpened() || sessions_.empty()) return;
+
+    const auto& sess = sessions_[current_session_idx_];
+    int total_f = sess.total_frames;
+    int saved_frame = current_frame_idx_;
+
+    // 1. Collect all (finger_id, frame_idx) pairs that are already labelled or protected:
+    //    - Any frame with an existing explicit AnchorEvent (TP or FP)
+    //    - The procedural expansion window [t0 + neg_approach_start, t0 + neg_release_end] around any TP (label == 1)
+    //    - The full [start_frame, end_frame] window of any CandidateWindow that has a TP (label == 1)
+    std::map<int, std::set<int>> protected_finger_frames;
+    for (const auto& cw : candidates_) {
+        bool has_tp = false;
+        for (const auto& a : cw.anchors) {
+            protected_finger_frames[a.finger_id].insert(a.impact_frame);
+            if (a.label == 1) {
+                has_tp = true;
+                int start_prot = std::max(0, a.impact_frame + config_.neg_approach_start);
+                int end_prot = std::min(total_f - 1, a.impact_frame + config_.neg_release_end);
+                for (int f = start_prot; f <= end_prot; ++f) {
+                    protected_finger_frames[a.finger_id].insert(f);
+                }
+            }
+        }
+        if (has_tp) {
+            for (int f = cw.start_frame; f <= cw.end_frame; ++f) {
+                protected_finger_frames[cw.finger_id].insert(f);
+            }
+        }
+    }
+
+    // 2. Instantiate the click processor matching processor_name_ and scan sequentially
+    auto click_proc = createInspectableProcessor(processor_name_);
+    cap_.set(cv::CAP_PROP_POS_FRAMES, 0);
+
+    int added_fp_count = 0;
+
+    for (int f = 0; f < total_f; ++f) {
+        cv::Mat frame;
+        if (!cap_.read(frame) || frame.empty()) break;
+
+        // Uses cached hands if already pre-scanned, or runs tracker + updates keyboard_map_
+        processOrFetchFrame(f, frame);
+
+        auto hands_ptr = hand_cache_.count(f) ? hand_cache_[f] : nullptr;
+        if (hands_ptr && !hands_ptr->empty()) {
+            click_proc->setFrameIfNeeded(frame);
+            click_proc->process(*hands_ptr, keyboard_map_, frame.cols, frame.rows);
+
+            const auto& active_clicks = click_proc->activeClicks();
+            if (!active_clicks.empty()) {
+                auto sorted_hands = getSpatiallySortedHands(hands_ptr);
+
+                for (size_t h_idx = 0; h_idx < std::min<size_t>(sorted_hands.size(), 2); ++h_idx) {
+                    const auto& hand = sorted_hands[h_idx];
+                    for (int f_idx = 0; f_idx < 5; ++f_idx) {
+                        int tip_idx = FINGER_TIP_INDICES[f_idx];
+                        int suite_finger_id = static_cast<int>(h_idx * 5 + f_idx);
+                        int proc_finger_id = (hand.handedness << 8) | tip_idx;
+
+                        auto click_it = active_clicks.find(proc_finger_id);
+                        if (click_it == active_clicks.end()) {
+                            continue;
+                        }
+
+                        // Skip if this finger/frame was already labelled by the user
+                        if (protected_finger_frames[suite_finger_id].count(f)) {
+                            continue;
+                        }
+
+                        const auto& tip = hand.landmarks[tip_idx];
+                        int px = static_cast<int>(tip.x * sess.frame_width);
+                        int py = static_cast<int>(tip.y * sess.frame_height);
+                        std::string key_id = click_it->second.empty()
+                                                 ? guessKeyAtPixel(px, py)
+                                                 : click_it->second;
+
+                        AnchorEvent ev;
+                        ev.impact_frame = f;
+                        ev.label = 0; // Auto-filled False Positive / Hard Negative
+                        ev.finger_id = suite_finger_id;
+                        ev.px = px;
+                        ev.py = py;
+                        ev.raw_roi = cv::Rect(
+                            px - (config_.roi_width / 2) + config_.roi_offset_x,
+                            py - (config_.roi_height / 2) + config_.roi_offset_y,
+                            config_.roi_width,
+                            config_.roi_height);
+                        ev.key_id = key_id;
+                        ev.heuristic_triggered = true;
+
+                        // Attach to an existing non-TP window for this finger if nearby, else create one
+                        int matched_idx = -1;
+                        for (size_t c_idx = 0; c_idx < candidates_.size(); ++c_idx) {
+                            auto& cw = candidates_[c_idx];
+                            if (cw.finger_id == suite_finger_id &&
+                                f >= cw.start_frame - 5 &&
+                                f <= cw.end_frame + 5) {
+                                bool cw_has_tp = std::any_of(
+                                    cw.anchors.begin(), cw.anchors.end(),
+                                    [](const AnchorEvent& a) { return a.label == 1; });
+                                if (!cw_has_tp) {
+                                    matched_idx = static_cast<int>(c_idx);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (matched_idx == -1) {
+                            CandidateWindow nw;
+                            nw.id = static_cast<int>(candidates_.size());
+                            nw.finger_id = suite_finger_id;
+                            nw.start_frame = std::max(0, f - 8);
+                            nw.end_frame = std::min(std::max(0, total_f - 1), f + 8);
+                            nw.peak_frame = f;
+                            nw.trig_shadow = (processor_name_ == "shadow");
+                            nw.trig_kinematic = (processor_name_ != "shadow");
+                            nw.suggested_key = key_id;
+                            nw.state = WindowState::ACCEPTED;
+                            nw.anchors.push_back(ev);
+                            candidates_.push_back(nw);
+                        } else {
+                            auto& cw = candidates_[matched_idx];
+                            cw.start_frame = std::min(cw.start_frame, f);
+                            cw.end_frame = std::max(cw.end_frame, f);
+                            if (ev.key_id == "UNKNOWN" || ev.key_id == "NONE") {
+                                ev.key_id = cw.suggested_key;
+                            }
+                            cw.anchors.push_back(ev);
+                            cw.state = WindowState::ACCEPTED;
+                        }
+
+                        protected_finger_frames[suite_finger_id].insert(f);
+                        added_fp_count++;
+                    }
+                }
+            }
+        }
+
+        if (f % 15 == 0) {
+            current_frame_idx_ = f;
+            raw_frame_ = frame;
+            status_banner_ = "Auto-Filling ClickProcessor FPs: Frame " + std::to_string(f) +
+                             " / " + std::to_string(total_f) + " | Added FPs: " +
+                             std::to_string(added_fp_count);
+            renderWorkspaceUI(true);
+            if (cv::waitKey(1) == 27) break;
+        }
+    }
+
+    sortCandidateQueue();
+    seekToFrame(saved_frame);
+    status_banner_ = "Auto-Fill Complete! Added " + std::to_string(added_fp_count) +
+                     " FP (0) labels from '" + processor_name_ + "' processor.";
+}
+
 // ============================================================================
 // BATCH EXPORTER
 // ============================================================================
@@ -1370,6 +1571,7 @@ void AnnotationSuite::drawRightInspector(cv::Mat& canvas, const cv::Rect& bounds
         "C         : Override Key ID",
         "N         : Add Manual Candidate (FN)",
         "P         : Full Video Pre-Scan",
+        "F         : Auto-Fill Processor FPs (0)",
         "M         : Toggle FIFO Finger / Time",
         "G         : Mark File Completed",
         "E         : Batch Export to .bin/.h5"
@@ -1500,6 +1702,7 @@ void AnnotationSuite::printControlsHelp() const {
               << "  C         : Override Key ID for Active Window\n"
               << "  N         : Create Manual Candidate Window (FN Fix)\n"
               << "  P         : Full Video Dual-Gate Pre-Scan\n"
+              << "  F         : Auto-Fill Unlabelled ClickProcessor Fires as FP (0)\n"
               << "  M         : Toggle Queue Order (FIFO Finger / Time)\n"
               << "  G         : Toggle Session Status (WIP / COMPLETED)\n"
               << "  [ / ]     : Save & Load Prev / Next Video File\n"

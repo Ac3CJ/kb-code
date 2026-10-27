@@ -168,6 +168,7 @@ private:
     void jumpToCandidate(int direction);
     bool getFingerPixelCoords(int frame_idx, int finger_id, int& out_px, int& out_py) const;
     void labelCurrentFrame(int label_val);
+    void autoFillClickProcessorNegatives();
     void clearCurrentWindowAnchors();
     void createManualCandidateAtCurrentFrame();
     void handleKeyReclassificationInput(int key);

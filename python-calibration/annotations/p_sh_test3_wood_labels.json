@@ -8,8 +8,272 @@
     "frame_height": 1080,
     "total_frames": 734,
     "lighting": "overhead",
-    "surface": "matte_light",
+    "surface": "matte_dark",
     "expected_transcript": "",
     "candidates": [
+        {
+            "finger_id": 0,
+            "start_frame": 14,
+            "end_frame": 55,
+            "peak_frame": 22,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 0,
+            "start_frame": 96,
+            "end_frame": 270,
+            "peak_frame": 104,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 0,
+            "end_frame": 55,
+            "peak_frame": 7,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 1,
+            "start_frame": 88,
+            "end_frame": 268,
+            "peak_frame": 96,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 0,
+            "end_frame": 58,
+            "peak_frame": 7,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_AltGr",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 2,
+            "start_frame": 90,
+            "end_frame": 268,
+            "peak_frame": 98,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Comma",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 0,
+            "end_frame": 55,
+            "peak_frame": 7,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 3,
+            "start_frame": 97,
+            "end_frame": 268,
+            "peak_frame": 105,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Fn",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 9,
+            "end_frame": 55,
+            "peak_frame": 17,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Option",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 4,
+            "start_frame": 96,
+            "end_frame": 268,
+            "peak_frame": 104,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "R_Shift",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 31,
+            "end_frame": 62,
+            "peak_frame": 39,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 93,
+            "end_frame": 180,
+            "peak_frame": 101,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 5,
+            "start_frame": 196,
+            "end_frame": 228,
+            "peak_frame": 204,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 30,
+            "end_frame": 69,
+            "peak_frame": 38,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "Space",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 6,
+            "start_frame": 83,
+            "end_frame": 228,
+            "peak_frame": 91,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "X",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 30,
+            "end_frame": 174,
+            "peak_frame": 38,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Win",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 7,
+            "start_frame": 200,
+            "end_frame": 228,
+            "peak_frame": 208,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Backslash",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 28,
+            "end_frame": 67,
+            "peak_frame": 36,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "Caps",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 8,
+            "start_frame": 79,
+            "end_frame": 238,
+            "peak_frame": 87,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "Tab",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 27,
+            "end_frame": 62,
+            "peak_frame": 35,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 0,
+            "suggested_key": "NONE",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 78,
+            "end_frame": 114,
+            "peak_frame": 86,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "D",
+            "anchors": [
+            ]
+        },
+        {
+            "finger_id": 9,
+            "start_frame": 128,
+            "end_frame": 238,
+            "peak_frame": 136,
+            "state": 0,
+            "trig_shadow": 1,
+            "trig_kinematic": 1,
+            "suggested_key": "L_Ctrl",
+            "anchors": [
+            ]
+        }
     ]
 }

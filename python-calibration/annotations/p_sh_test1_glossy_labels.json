@@ -939,7 +939,7 @@
             "state": 1,
             "trig_shadow": 0,
             "trig_kinematic": 0,
-            "suggested_key": "/",
+            "suggested_key": "Slash",
             "anchors": [
                 {
                     "impact_frame": 79,
@@ -952,7 +952,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 0,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 80,
@@ -965,7 +965,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 81,
@@ -978,7 +978,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 82,
@@ -991,7 +991,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 83,
@@ -1004,7 +1004,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 84,
@@ -1017,7 +1017,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 85,
@@ -1030,7 +1030,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 86,
@@ -1043,7 +1043,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 87,
@@ -1056,7 +1056,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 88,
@@ -1069,7 +1069,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 89,
@@ -1082,7 +1082,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 }
             ]
         },
@@ -1146,7 +1146,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 125,
@@ -1159,7 +1159,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 126,
@@ -1172,7 +1172,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 127,
@@ -1185,7 +1185,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 128,
@@ -1198,7 +1198,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 },
                 {
                     "impact_frame": 129,
@@ -1211,7 +1211,7 @@
                     "roi_w": 150,
                     "roi_h": 75,
                     "heuristic_triggered": 1,
-                    "key_id": "/"
+                    "key_id": "Slash"
                 }
             ]
         },
